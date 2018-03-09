@@ -14,7 +14,7 @@ public class View extends GridWorldView
 	
 	public View(Model _model)
 	{
-		super(_model, "My View", 800);
+		super(_model, "My View", 700);
 		this.model = _model;
 		Font defaultFont = new Font("Arial", Font.BOLD, 15);
 		setVisible(true);

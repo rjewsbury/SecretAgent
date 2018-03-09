@@ -54,8 +54,8 @@ public class Model extends GridWorldModel
 	private int[] votes = new int[NUM_PLAYERS];
 	
 	private int kernelID = -1;
-	private int schedulerID = -1;
 	private int exKernelID = -1;
+	private int schedulerID = -1;
 	private int exSchedulerID = -1;
 	
 	//initialization ----------------------------------
@@ -321,8 +321,7 @@ public class Model extends GridWorldModel
 	
 	public boolean vote(int ag)
 	{
-		boolean success;
-		
+		boolean success = true;
 		
 		return success;
 	}
