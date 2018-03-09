@@ -17,3 +17,5 @@
 	<- .print("I am Virus").
 
 +!foobar
+	
++!barfoo
