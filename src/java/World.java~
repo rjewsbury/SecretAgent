@@ -10,13 +10,6 @@ public class World extends Environment {
 	private Logger logger = Logger.getLogger("secretagent."+World.class.getName());
 	
 	private static final Literal drawThree = Literal.parseLiteral("drawThree");
-	private static final Literal passCards = Literal.parseLiteral("passCards");
-	private static final Literal passKernel = Literal.parseLiteral("passKernel");
-	private static final Literal playAntiVirus = Literal.parseLiteral("playAntiVirus");
-	private static final Literal discardAntiVirus = Literal.parseLiteral("discardAntiVirus");
-	private static final Literal playVirus = Literal.parseLiteral("playVirus");
-	private static final Literal discardVirus = Literal.parseLiteral("discardVirus");
-	private static final Literal vote = Literal.parseLiteral("vote");
 	
 	Model model;
 
@@ -40,23 +33,9 @@ public class World extends Environment {
 	public boolean executeAction(String agName, Structure action) {
 		
 		boolean result = false;
-		int agentId = 0;
 		
 		if (action.equals(drawThree))
-			result = model.drawThree(agentId);
-		if (action.equals(passCards))
-			result = model.passCards(agentId);
-		if (action.equals(passKernel))
-			result = model.passKernel(agentId);
-		if (action.equals(playAntiVirus))
-			result = model.playAntiVirus(agentId);
-		if (action.equals(discardAntiVirus))
-			result = model.discardAntiVirus(agentId);
-		if (action.equals(playVirus))
-			result = model.playVirus(agentId);
-		if (action.equals(discardVirus))
-			result = model.discardVirus(agentId);
-		
+			;
 		else
 			logger.info("executing: "+action+", but not implemented!");
 		
@@ -80,9 +59,6 @@ public class World extends Environment {
 		clearPercepts();
 		addPercept(Literal.parseLiteral("virusPlayed(" + model.getNumVirus() + ")"));
 		addPercept(Literal.parseLiteral("antiVirusPlayed(" + model.getNumAntiVirus() + ")"));
-		
-		for(int i = 0; i < 6; i++)
-		 addPercept("player"+(i + 1)+"", Literal.parseLiteral("role("+model.getRole(i)+")"));
 	}
 	
 }
