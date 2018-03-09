@@ -15,5 +15,3 @@
 +!play
 	: role(R) & R = 0
 	<- .print("I am Virus").
-	
-+!barfoo

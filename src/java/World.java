@@ -78,11 +78,48 @@ public class World extends Environment {
 	private void updatePercepts()
 	{
 		clearPercepts();
+		
+		//tell all players about the board state
 		addPercept(Literal.parseLiteral("virusPlayed(" + model.getNumVirus() + ")"));
 		addPercept(Literal.parseLiteral("antiVirusPlayed(" + model.getNumAntiVirus() + ")"));
 		
+		//tell all players who the kernel is
+		int kernelID = model.getKernel();
+		if(kernelID != -1){
+			addPercept(Literal.parseLiteral("kernel(" + kernelID + ")"));
+			//tell the kernel about the contents of their hand
+			if(model.getHandSize(kernelID) > 0){
+				addPercept("player"+kernelID, Literal.parseLiteral("heldVirus(" + model.getHeldVirus(kernelID) + ")"));
+				addPercept("player"+kernelID, Literal.parseLiteral("heldAntiVirus(" + model.getHeldAntiVirus(kernelID) + ")"));
+			}
+		}
+		//tell all players who the ex kernel is
+		int exKernelID = model.getExKernel();
+		if(exKernelID != -1)
+			addPercept(Literal.parseLiteral("exKernel(" + exKernelID + ")"));
+		
+		//tell all players who the scheduler is
+		int schedulerID = model.getScheduler();
+		if(schedulerID != -1){
+			addPercept(Literal.parseLiteral("scheduler(" + schedulerID + ")"));
+			if(model.getHandSize(schedulerID) > 0){
+				addPercept("player"+schedulerID, Literal.parseLiteral("heldVirus(" + model.getHeldVirus(schedulerID) + ")"));
+				addPercept("player"+schedulerID, Literal.parseLiteral("heldAntiVirus(" + model.getHeldAntiVirus(schedulerID) + ")"));
+			}
+		}
+		
+		//tell players who the ex scheduler is
+		int exSchedulerID = model.getExScheduler();
+		if(exSchedulerID != -1)
+			addPercept(Literal.parseLiteral("exScheduler(" + exSchedulerID + ")"));
+		
+		//tell each player what their role is
 		for(int i = 0; i < 6; i++)
-		 addPercept("player"+(i + 1)+"", Literal.parseLiteral("role("+model.getRole(i)+")"));
+			addPercept("player"+i, Literal.parseLiteral("role("+model.getRole(i)+")"));
+		
+		//tell each player what their number is
+		for(int i = 0; i < 6; i++)
+			addPercept("player"+i, Literal.parseLiteral("player("+i+")"));
 	}
 	
 }

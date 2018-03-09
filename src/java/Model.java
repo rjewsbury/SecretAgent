@@ -206,6 +206,10 @@ public class Model extends GridWorldModel
 	
 	public int getNumAntiVirus(){ return numAntiVirusCards; }
 	
+	public int getHandSize(int ag){
+		return hand[ag].size();	
+	}
+	
 	public int getHeldVirus(int ag){
 		int heldVirus = 0;
 		for(Integer ID : hand[ag])
@@ -317,13 +321,5 @@ public class Model extends GridWorldModel
 		}
 		
 		return success;	
-	}
-	
-	public boolean vote(int ag)
-	{
-		boolean success;
-		
-		
-		return success;
 	}
 }
