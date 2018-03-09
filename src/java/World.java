@@ -82,7 +82,7 @@ public class World extends Environment {
 		addPercept(Literal.parseLiteral("antiVirusPlayed(" + model.getNumAntiVirus() + ")"));
 		
 		for(int i = 0; i < 6; i++)
-		 addPercept("player"+(i)+"", Literal.parseLiteral("role("+model.getRole(i)+")"));
+		 addPercept("player"+i+"", Literal.parseLiteral("role("+model.getRole(i)+")"));
 	}
 	
 }

@@ -57,6 +57,9 @@ public class Model extends GridWorldModel
 	private int exKernelID = -1;
 	private int schedulerID = -1;
 	private int exSchedulerID = -1;
+	private int electedSchedulerID = -1;
+	
+	private boolean votePassed = false;
 	
 	//initialization ----------------------------------
 	
@@ -184,6 +187,43 @@ public class Model extends GridWorldModel
 			set(ANTI_VIRUS_CARD, 3+i, 7);
 	}
 	
+	private void checkVotes()
+	{
+		int numYes = 0;
+		int numNo = 0;
+		for(int i = 0; i < votes.length; i++)
+		{
+			if(votes[i] == NO_VOTE)
+				numNo++;
+			if(votes[i] == YES_VOTE)
+				numYes++;
+		}
+		//if everyone voted
+		if(numYes + numNo == NUM_PLAYERS)
+		{
+			if(numYes > numNo)
+				passVote();
+			else
+				failVote();
+		}
+	}
+	
+	private void passVote()
+	{
+		votePassed = true;
+		schedulerID = electedSchedulerID;
+		electedSchedulerID = -1;
+	}
+	
+	private void failVote()
+	{
+		//Passes the kernel to the next player, ex-scheduler stays the same
+		exKernelID = kernelID;
+		kernelID = (kernelID + 1) % NUM_PLAYERS;
+		schedulerID = -1;
+		electedSchedulerID = -1;
+	}
+	
 	//getters -----------------------------------------
 	
 	public List<Integer> getHand(int ag){ return hand[ag]; }
@@ -202,9 +242,13 @@ public class Model extends GridWorldModel
 	
 	public int getExScheduler(){ return exSchedulerID; }
 	
+	public int getElectedSchedulerID(){ return electedSchedulerID; }
+	
 	public int getNumVirus(){ return numVirusCards; }
 	
 	public int getNumAntiVirus(){ return numAntiVirusCards; }
+	
+	public boolean getVotePassed(){ return votePassed; }
 	
 	public int getHeldVirus(int ag){
 		int heldVirus = 0;
@@ -233,6 +277,16 @@ public class Model extends GridWorldModel
 		kernelID = (kernelID + 1) % NUM_PLAYERS;
 		schedulerID = -1;
 		
+		votePassed = false;
+		
+		return true;
+	}
+	
+	public boolean electScheduler(int ag, int target)
+	{
+		if(electedSchedulerID != -1 || ag != kernelID)
+			return false;
+		electedSchedulerID = target;
 		return true;
 	}
 	
@@ -319,10 +373,21 @@ public class Model extends GridWorldModel
 		return success;	
 	}
 	
-	public boolean vote(int ag)
+	public boolean voteYes(int ag)
 	{
-		boolean success = true;
-		
-		return success;
+		if(votes[ag] != NULL_VOTE)
+			return false;
+		votes[ag] = YES_VOTE;
+		checkVotes();
+		return true;
+	}
+	
+	public boolean voteNo(int ag)
+	{
+		if(votes[ag] != NULL_VOTE)
+			return false;
+		votes[ag] = NO_VOTE;
+		checkVotes();
+		return true;
 	}
 }
