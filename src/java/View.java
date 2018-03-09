@@ -57,12 +57,15 @@ public class View extends GridWorldView
 	}
 	
 	public void drawAgent(Graphics g, int x, int y, Color c, int id){
+		Font defaultFont = new Font("Arial", Font.BOLD, 15);
 		
 		if(model.getRole(id) == model.VIRUS_ROLE)
-			super.drawAgent(g,x,y,VIRUS_COLOR,id);
+			super.drawAgent(g,x,y,VIRUS_COLOR,-1);
 		if(model.getRole(id) == model.ROGUE_ROLE)
-			super.drawAgent(g,x,y,ROGUE_COLOR,id);
+			super.drawAgent(g,x,y,ROGUE_COLOR,-1);
 		if(model.getRole(id) == model.ANTI_VIRUS_ROLE)
-			super.drawAgent(g,x,y,ANTI_VIRUS_COLOR,id);
+			super.drawAgent(g,x,y,ANTI_VIRUS_COLOR,-1);
+		g.setColor(Color.BLACK);
+		drawString(g, x, y, defaultFont, ""+id);
 	}
 }
