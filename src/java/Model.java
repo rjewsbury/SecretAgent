@@ -53,9 +53,9 @@ public class Model extends GridWorldModel
 	private int[] board;
 	private int[] votes = new int[NUM_PLAYERS];
 	
-	private int kernelID = -1;
+	private int kernelID = 0;
 	private int exKernelID = -1;
-	private int schedulerID = -1;
+	private int schedulerID = 1;
 	private int exSchedulerID = -1;
 	private int electedSchedulerID = -1;
 	

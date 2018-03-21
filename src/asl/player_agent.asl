@@ -1,73 +1,127 @@
 
+//Player Roles
 isKernel :- kernel(K) & player(N) & N = K.
 isScheduler :- scheduler(S) & player(N) & N = S.
 
-//Roles
+//Player Identities
 isVirus :- role(R) & R = 0.
 isRogue :- role(R) & R = 1.
 isAntiVirus :- role(R) & R = 2.
-
-
 
 !identity.
 
 //If agent is an AntiVirus
 +!identity
 	: isAntiVirus
-	<- .print("I am an AntiVirus").
-	   //!play.
+	<- .print("I am an AntiVirus");
+	   !play.
 	
 //If agent is a Rogue
 +!identity
 	: isRogue
-	<- .print("I am a Rogue").
-	   //!play.
+	<- .print("I am a Rogue");
+	   !play.
 	
 //If agent is a Rogue
 +!identity
 	: isVirus
-	<- .print("I am a Virus").
-	   //!play.
-
-//Kernel Player Logic	   
+	<- .print("I am a Virus");
+	   !play.	   
 	   
-	   //Logic to when player is Kernel
-+!play
+	// Methods each agent can do //
++!drawCards
 	: isKernel
-	<- ?schedulerCandidate(X);
-		electScheduler(X);
+	<-	drawThree;
+		!passCards;
 		!play.
+
++!discardCard
+	: isKernel 
+	<-	discardVirus.
 	
-//Scheduler Player Logic
++!discardCard
+	: isKernel
+	<-	discardAntiVirus.
 		
-	//Logic to play when player is Scheduler and Virus
++!passCards
+	: isKernel
+	<-	passCards.
+
+
+	//Logic to play when player is Virus
++!play
+	: isVirus
+	<- !play.
+
+	
+	
+	//Logic to play when player is Rogue
++!play
+	: isRogue
+	<- !play.
+	
+
+	// Logic to play when player is Virus //	
+//If Kernel
++!play
+	: isKernel & isVirus
+	<- 	//?schedulerCandidate(X);
+		//electScheduler(X);
+		!play.
+
+//If Scheduler
 +!play
 	: isScheduler & isVirus
-	<- !play.
+	<- 	discardVirus;
+		playAntiVirus;
+		!play.
 
-	//Logic to play when player is Scheduler and is Rogue
+	
+	// Logic to play when player is Rogue //
+	
+//If Kernel
++!play
+	: isKernel & isRogue
+	<- 	//?schedulerCandidate(X);
+		//electScheduler(X);
+		!play.
+
+//If Scheduler
 +!play
 	: isScheduler & isRogue
-	<- !play.
-	
-	//Logic to play when player is Scheduler and AntiVirus
+	<- 	discardVirus;
+		playAntiVirus;
+		!play.
+
+		
+		// Logic to play when player is AntiVirus //
+
+//If Kernel
++!play
+	: isKernel & isAntiVirus
+	<- 	//?schedulerCandidate(X);
+		//electScheduler(X);
+		drawThree;
+		!play.
+		
+		//If Scheduler 
+//If has 1 all
 +!play
 	: isScheduler & isAntiVirus
-	<- !play.
-	
-//Regular Player Logic
-	
-	//Logic to play when player is a Virus
+	<- 	discardVirus;
+		playAntiVirus;
+		!play.
+
+		//If has 2 of same
 +!play
-	: isVirus
-	<- !play.
-	
-	//Logic to play when player is a Rogue
+	: isScheduler & isAntiVirus
+	<- 	discardAntiVirus;
+		playAntiVirus;
+		!play.
+		
 +!play
-	: isRogue
-	<- !play.	
-	
-	//Logic to play when player is an AntiVirus
-+!play
-	: isAntiVirus
-	<- !play.
+	: isScheduler & isAntiVirus
+	<- 	discardVirus;
+		playVirus;
+		!play.
+		

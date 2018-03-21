@@ -40,7 +40,11 @@ public class World extends Environment {
 	public boolean executeAction(String agName, Structure action) {
 		
 		boolean result = false;
-		int agentId = 0;
+		/* This didnt work :(
+		String[] temp = agName.split("player");
+		String t = temp[0];
+		int agentId = Integer.parseInt(t); */
+		int agentId = Integer.parseInt(agName.substring(agName.length() - 1));
 		
 		if (action.equals(drawThree))
 			result = model.drawThree(agentId);
