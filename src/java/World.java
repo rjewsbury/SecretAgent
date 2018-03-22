@@ -40,10 +40,6 @@ public class World extends Environment {
 	public boolean executeAction(String agName, Structure action) {
 		
 		boolean result = false;
-		/* This didnt work :(
-		String[] temp = agName.split("player");
-		String t = temp[0];
-		int agentId = Integer.parseInt(t); */
 		int agentId = Integer.parseInt(agName.substring(agName.length() - 1));
 		
 		if (action.equals(drawThree))
@@ -67,7 +63,7 @@ public class World extends Environment {
 		if (result)
 		{
 			updatePercepts();
-			try { Thread.sleep(100); } catch (InterruptedException x) { }
+			try { Thread.sleep(2000); } catch (InterruptedException x) { }
 		}
 		
 		return result;

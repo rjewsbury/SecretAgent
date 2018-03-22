@@ -88,6 +88,9 @@ public class Model extends GridWorldModel
 			hand[i] = new ArrayList<>(MAX_HAND);
 		//set the kernel
 		kernelID = random.nextInt(NUM_PLAYERS);
+		schedulerID = random.nextInt(NUM_PLAYERS);
+		while(schedulerID == kernelID)
+		{schedulerID = random.nextInt(NUM_PLAYERS);}
 	}
 	
 	private void initPositions()

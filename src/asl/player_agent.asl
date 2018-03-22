@@ -1,3 +1,6 @@
+//Ending the game
+virusWin :- virusPlayed(V) & V = 6.
+antiVirusWin :- antiVirusPlayed(A) & A = 5.
 
 //Player Roles
 isKernel :- kernel(K) & player(N) & N = K.
@@ -26,102 +29,193 @@ isAntiVirus :- role(R) & R = 2.
 +!identity
 	: isVirus
 	<- .print("I am a Virus");
-	   !play.	   
+	   !play.
 	   
-	// Methods each agent can do //
-+!drawCards
-	: isKernel
-	<-	drawThree;
-		!passCards;
-		!play.
-
-+!discardCard
-	: isKernel 
-	<-	discardVirus.
-	
-+!discardCard
-	: isKernel
-	<-	discardAntiVirus.
-		
-+!passCards
-	: isKernel
-	<-	passCards.
-
-
-	//Logic to play when player is Virus
+	   
+	   //Things all Agents will do
 +!play
-	: isVirus
-	<- !play.
-
+	: virusWin
+	<- .print("Virus team wins!").
 	
-	
-	//Logic to play when player is Rogue
 +!play
-	: isRogue
-	<- !play.
-	
-
-	// Logic to play when player is Virus //	
-//If Kernel
+	: antiVirusWin
+	<- .print("AntiVirus team wins!").
+	   
 +!play
-	: isKernel & isVirus
+	: isKernel
 	<- 	//?schedulerCandidate(X);
 		//electScheduler(X);
+		!drawCards.
+	   
++!electScheduler
+	: isKernel
+	<-  //?schedulerCandidate(X);
+		//electScheduler(X);
 		!play.
+		
++!drawCards
+	: isKernel
+	<- drawThree;
+	   !discardCard.
+	   
++!playCard
+	: isScheduler & heldAntiVirus(A) & A > 0
+	<- playAntiVirus.	
 
-//If Scheduler
-+!play
-	: isScheduler & isVirus
-	<- 	discardVirus;
-		playAntiVirus;
-		!play.
-
++!playCard
+	: isScheduler & heldVirus(V) & V > 0
+	<- playVirus.
 	
-	// Logic to play when player is Rogue //
+	
+	
+	// 
+	//Logic to play when player is VIRUS
+	//	
 	
 //If Kernel
 +!play
 	: isKernel & isRogue
-	<- 	//?schedulerCandidate(X);
-		//electScheduler(X);
-		!play.
+	<- !discardCard.
 
-//If Scheduler
-+!play
-	: isScheduler & isRogue
-	<- 	discardVirus;
-		playAntiVirus;
-		!play.
++!discardCard
+	: isKernel & isVirus & heldVirus(V) & V = 0
+	<- discardAntiVirus;
+	   passCards;
+	   !play.
+	
++!discardCard
+	: isKernel & isVirus & heldVirus(V) & V > 0
+	<- discardVirus;
+	   passCards;
+	   !play.
 
 		
-		// Logic to play when player is AntiVirus //
+		//If Scheduler 
+//If has 1 all	
++!play
+	: isScheduler & isVirus
+	<- !discardCard.
+
++!discardCard
+	: isScheduler & isVirus & heldVirus(V) & heldAntiVirus(A) & V = A
+	<- discardVirus;
+	   !playCard;
+	   !play.
+
+//If only has AntiVirus cards
++!discardCard
+	: isScheduler & isVirus & heldVirus(V) & V = 0
+	<- discardAntiVirus;
+	   !playCard;
+	   !play.
+	   
+//If only has Virus cards
++!discardCard
+	: isScheduler & isVirus & heldVirus(V) & V = 2
+	<- discardVirus;
+	   !playCard;
+	   !play.
+		
+
+	
+	// 
+	//Logic to play when player is ROGUE
+	//	
+	
+//If Kernel
++!play
+	: isKernel & isRogue
+	<- !discardCard.
+
++!discardCard
+	: isKernel & isRogue & heldAntiVirus(A) & A = 0
+	<- discardVirus;
+	   passCards;
+	   !play.
+	
++!discardCard
+	: isKernel & isRogue  & heldAntiVirus(A) & A > 1
+	<- discardAntiVirus;
+	   passCards;
+	   !play.
+	
+		
+		// If Scheduler //
++!play
+	: isScheduler & isRogue
+	<- !discardCard.
+	
+//If has 1 all
++!discardCard
+	: isScheduler & isRogue & heldVirus(V) & heldAntiVirus(A) & V = A
+	<- discardAntiVirus;
+	   !playCard;
+	   !play.
+
+//If only has 2 AntiVirus cards
++!discardCard
+	: isScheduler & isRogue  & heldAntiVirus(A) & A = 2
+	<- discardAntiVirus;
+	   !playCard;
+	   !play.
+	   
+//If only has Virus cards
++!discardCard
+	: isScheduler & isRogue  & heldVirus(V) & V = 2
+	<- discardVirus;
+	   !playCard;
+	   !play.
+		
+
+		
+		// Logic to play when player is ANTIVIRUS //
 
 //If Kernel
 +!play
 	: isKernel & isAntiVirus
 	<- 	//?schedulerCandidate(X);
 		//electScheduler(X);
-		drawThree;
-		!play.
+		!drawCards.
+
++!discardCard
+	: isKernel & heldVirus(V) & V > 0
+	<- discardVirus;
+	   passCards;
+	   !play.
+	   
++!discardCard
+	: isKernel & heldAntiVirus(A) & A = 3
+	<- discardAntiVirus;
+	   passCards;
+	   !play.
 		
 		//If Scheduler 
++!play
+	: isScheduler & isAntiVirus
+	<- !discardCard.
+	
 //If has 1 all
-+!play
-	: isScheduler & isAntiVirus
-	<- 	discardVirus;
-		playAntiVirus;
-		!play.
++!discardCard
+	: isScheduler & heldVirus(V) & heldAntiVirus(A) & V = A
+	<- discardVirus;
+	   !playCard;
+	   !play.
 
-		//If has 2 of same
-+!play
-	: isScheduler & isAntiVirus
-	<- 	discardAntiVirus;
-		playAntiVirus;
-		!play.
-		
-+!play
-	: isScheduler & isAntiVirus
-	<- 	discardVirus;
-		playVirus;
-		!play.
-		
+//If only has Virus cards
++!discardCard
+	: isScheduler & heldVirus(V) & V = 2
+	<- discardVirus;
+		.print("Have 2 Virus cards");
+	   !playCard;
+	   !play.
+	   
+//If only has AntiVirus cards
++!discardCard
+	: isScheduler & heldAntiVirus(A) & A = 2
+	<- discardAntiVirus;
+	   !playCard;
+	   !play.
+	   
+-!play
+	:true
+	<- !play.
