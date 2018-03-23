@@ -28,7 +28,7 @@ isAntiVirus :- role(R) & R = 2.
 	: isVirus
 	<- .print("I am a Virus").
 	   //!play.
-
+	   
 //Kernel Player Logic	   
 	   
 	   //Logic to when player is Kernel

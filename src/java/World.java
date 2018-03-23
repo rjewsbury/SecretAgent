@@ -25,9 +25,30 @@ public class World extends Environment {
 	@Override
 	public void init(String[] args) {
 		super.init(args);
-		model = new Model();
 		
-		if (args.length > 0 && args[0].equals("gui"))
+		int num_players;
+		boolean use_gui = false;
+		//first optional argument is the number of players
+		//second optional argument is the 
+		if (args.length > 0){
+			try{
+				num_players = Integer.valueOf(args[0]);
+				use_gui = (args.length > 1 && args[1].equals("gui"));
+			}catch(NumberFormatException e){
+				//if it wasnt a number, use the default number
+				num_players = Model.DEFAULT_PLAYERS;
+				//check if the argument was to use a gui
+				use_gui = args[0].equals("gui");
+			}
+		}
+		else{
+			num_players = Model.DEFAULT_PLAYERS;
+		}
+		
+		//create the model
+		model = new Model(num_players);
+		
+		if (use_gui)
 		{
 			View view = new View(model);
 			model.setView(view);
@@ -114,11 +135,11 @@ public class World extends Environment {
 			addPercept(Literal.parseLiteral("exScheduler(" + exSchedulerID + ")"));
 		
 		//tell each player what their role is
-		for(int i = 0; i < 6; i++)
+		for(int i = 0; i < model.getNumPlayers(); i++)
 			addPercept("player"+i, Literal.parseLiteral("role("+model.getRole(i)+")"));
 		
 		//tell each player what their number is
-		for(int i = 0; i < 6; i++)
+		for(int i = 0; i < model.getNumPlayers(); i++)
 			addPercept("player"+i, Literal.parseLiteral("player("+i+")"));
 	}
 	
