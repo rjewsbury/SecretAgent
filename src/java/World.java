@@ -16,7 +16,9 @@ public class World extends Environment {
 	private static final Literal discardAntiVirus = Literal.parseLiteral("discardAntiVirus");
 	private static final Literal playVirus = Literal.parseLiteral("playVirus");
 	private static final Literal discardVirus = Literal.parseLiteral("discardVirus");
-	private static final Literal vote = Literal.parseLiteral("vote");
+	private static final Literal voteYes = Literal.parseLiteral("voteYes");
+	private static final Literal voteNo = Literal.parseLiteral("voteNo");
+	private static final Literal wait = Literal.parseLiteral("wait");
 	
 	Model model;
 
@@ -61,7 +63,7 @@ public class World extends Environment {
 	public boolean executeAction(String agName, Structure action) {
 		
 		boolean result = false;
-		int agentId = 0;
+		int agentId = Integer.parseInt(agName.substring(agName.length() - 1));
 		
 		if (action.equals(drawThree))
 			result = model.drawThree(agentId);
@@ -77,14 +79,20 @@ public class World extends Environment {
 			result = model.playVirus(agentId);
 		if (action.equals(discardVirus))
 			result = model.discardVirus(agentId);
+		if (action.equals(voteYes))
+			result = model.voteYes(agentId);
+		if (action.equals(voteNo))
+			result = model.voteNo(agentId);
+		if (action.equals(wait))
+			result = true;//do nothing
 		
 		else
 			logger.info("executing: "+action+", but not implemented!");
 		
 		if (result)
 		{
+			try { Thread.sleep(2000); } catch (InterruptedException x) { }
 			updatePercepts();
-			try { Thread.sleep(100); } catch (InterruptedException x) { }
 		}
 		
 		return result;
