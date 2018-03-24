@@ -61,6 +61,7 @@ public class Model extends GridWorldModel
 	private int electedSchedulerID = -1;
 	
 	private boolean voteComplete = false;
+	private boolean cardPlayed = false;
 	
 	//initialization ----------------------------------
 	
@@ -257,6 +258,8 @@ public class Model extends GridWorldModel
 	
 	public boolean getVoteComplete(){ return voteComplete; }
 	
+	public boolean getCardPlayed(){ return cardPlayed; }
+	
 	public int getVote(int ag){ return votes[ag]; }
 	
 	public int getHandSize(int ag){
@@ -292,6 +295,7 @@ public class Model extends GridWorldModel
 		schedulerID = -1;
 		
 		voteComplete = false;
+		cardPlayed = false;
 		clearVotes();
 		
 		return true;
@@ -367,6 +371,7 @@ public class Model extends GridWorldModel
 		boolean success = hand[ag].remove(Integer.valueOf(VIRUS_CARD));
 		if(success){
 			numVirusCards++;
+			cardPlayed = true;
 			updateBoardCards();
 			updateHand(ag);
 		}
@@ -381,6 +386,7 @@ public class Model extends GridWorldModel
 		boolean success = hand[ag].remove(Integer.valueOf(ANTI_VIRUS_CARD));
 		if(success){
 			numAntiVirusCards++;
+			cardPlayed = true;
 			updateBoardCards();
 			updateHand(ag);
 		}
