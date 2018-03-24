@@ -21,10 +21,13 @@ public class View extends GridWorldView
 		repaint();
 	}
 	
-	@Override
-	public void update(int x, int y){
-		//to fix drawing bugs, updates the entire board every update
-		update();
+	public void updateAgents(){
+		//this is a bad hack to update the rolls of the agents
+		//nothing actually changes in the environment,
+		//so it doesnt update automatically
+		for(int y = 2; y <= 10; y+=8)
+			for(int x = 2; x <= 10; x++)
+				update(x,y);
 	}
 	
 	@Override
@@ -59,13 +62,28 @@ public class View extends GridWorldView
 	public void drawAgent(Graphics g, int x, int y, Color c, int id){
 		Font defaultFont = new Font("Arial", Font.BOLD, 15);
 		
+		String display = "";
+		
 		if(model.getRole(id) == model.VIRUS_ROLE)
 			super.drawAgent(g,x,y,VIRUS_COLOR,-1);
 		if(model.getRole(id) == model.ROGUE_ROLE)
 			super.drawAgent(g,x,y,ROGUE_COLOR,-1);
 		if(model.getRole(id) == model.ANTI_VIRUS_ROLE)
 			super.drawAgent(g,x,y,ANTI_VIRUS_COLOR,-1);
+		
+		if(model.getKernel() == id)
+			display += "K";
+		else if(model.getScheduler() == id)
+			display += "S";
+		else if(model.getExKernel() == id)
+			display += "Ex-K";
+		else if(model.getExScheduler() == id)
+			display += "Ex-S";
+		else if(model.getElectedScheduler() == id)
+			display += "Elect";
+		
 		g.setColor(Color.BLACK);
-		drawString(g, x, y, defaultFont, ""+id);
+		drawString(g, x, y, defaultFont, display);
+		g.drawString(""+id, x*cellSizeW+5,(y+1)*cellSizeH-5);
 	}
 }

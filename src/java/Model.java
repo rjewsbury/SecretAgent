@@ -8,6 +8,7 @@ import java.util.logging.*;
 public class Model extends GridWorldModel
 {
 	//constants ---------------------------------------
+	public static final int DEFAULT_PLAYERS = 6;
 	
 	public static final int TABLE = 1 << 3;
 	public static final int BOARD = 1 << 4;
@@ -18,10 +19,8 @@ public class Model extends GridWorldModel
 	public static final int ROGUE_ROLE = 1;
 	public static final int ANTI_VIRUS_ROLE = 2;
 	
-	public static final int NUM_PLAYERS = 6;
-	
-	private static final int GRID_WIDTH = 13;
-	private static final int GRID_HEIGHT = 13;
+	public static final int GRID_WIDTH = 13;
+	public static final int GRID_HEIGHT = 13;
 	
 	private static final int VIRUS_CARDS = 11;
 	private static final int ANTI_VIRUS_CARDS = 6;
@@ -43,6 +42,8 @@ public class Model extends GridWorldModel
 	
 	//variables ---------------------------------------
 	
+	private int num_players;
+	
 	private int numVirusCards;
 	private int numAntiVirusCards;
 	private List<Integer> deck;
@@ -51,25 +52,26 @@ public class Model extends GridWorldModel
 	
 	private int[] role;
 	private int[] board;
-	private int[] votes = new int[NUM_PLAYERS];
+	private int[] votes;
 	
 	private int kernelID = 0;
 	private int exKernelID = -1;
-	private int schedulerID = 1;
+	private int schedulerID = -1;
 	private int exSchedulerID = -1;
 	private int electedSchedulerID = -1;
 	
-	private boolean votePassed = false;
+	private boolean voteComplete = false;
 	
 	//initialization ----------------------------------
 	
-	public Model()
+	public Model(int players)
 	{
-		super(GRID_WIDTH, GRID_HEIGHT, NUM_PLAYERS);
+		super(GRID_WIDTH, GRID_HEIGHT, players);
+		num_players = players;
 		//set up the board
-		if(NUM_PLAYERS < 7)
+		if(num_players < 7)
 			board = Arrays.copyOf(BOARD5_6,BOARD5_6.length);
-		else if(NUM_PLAYERS < 9)
+		else if(num_players < 9)
 			board = Arrays.copyOf(BOARD7_8,BOARD7_8.length);
 		else
 			board = Arrays.copyOf(BOARD9_10,BOARD9_10.length);
@@ -82,30 +84,36 @@ public class Model extends GridWorldModel
 		initDecks();
 		//set up roles
 		initRoles();
+		votes = new int[num_players];
+		clearVotes();
 		//set up the hands
-		hand = new List[NUM_PLAYERS];
-		for(int i = 0; i < NUM_PLAYERS; i++)
+		hand = new List[num_players];
+		for(int i = 0; i < num_players; i++)
 			hand[i] = new ArrayList<>(MAX_HAND);
 		//set the kernel
-		kernelID = random.nextInt(NUM_PLAYERS);
-		schedulerID = random.nextInt(NUM_PLAYERS);
-		while(schedulerID == kernelID)
-		{schedulerID = random.nextInt(NUM_PLAYERS);}
+		kernelID = random.nextInt(num_players);
+
+		/*temporary*
+		schedulerID = random.nextInt(num_players);
+		while(schedulerID == kernelID){
+			schedulerID = random.nextInt(num_players);
+		}
+		/**/
 	}
 	
 	private void initPositions()
 	{
 		//ternary operators are cool.
 		//spacing changes depending on number of players
-		int spacing = NUM_PLAYERS > 6 ? 2 : 4;
+		int spacing = num_players > 6 ? 2 : 4;
 		int dx = 0;
 		int dy = 0;
 		//agents sit in static locations
-		for(int i = 0; i < NUM_PLAYERS; i++){
-			dx = (i < NUM_PLAYERS/2) ?
+		for(int i = 0; i < num_players; i++){
+			dx = (i < num_players/2) ?
 					spacing*i:
-					spacing*(i-NUM_PLAYERS/2);
-			dy = (i < NUM_PLAYERS/2) ?
+					spacing*(i-num_players/2);
+			dy = (i < num_players/2) ?
 					0:
 					8;
 			setAgPos(i, 2+dx, 2+dy);
@@ -121,20 +129,20 @@ public class Model extends GridWorldModel
 	
 	private void initRoles()
 	{
-		List<Integer> tempRole = new ArrayList<>(NUM_PLAYERS);
+		List<Integer> tempRole = new ArrayList<>(num_players);
 		
-		if(NUM_PLAYERS < 5 || NUM_PLAYERS > 10)
+		if(num_players < 5 || num_players > 10)
 			throw new IndexOutOfBoundsException("Too few players");
 		//there's always a virus and a rogue
 		tempRole.add(VIRUS_ROLE);
 		tempRole.add(ROGUE_ROLE);
 		//add the correct number of rogues
-		if(NUM_PLAYERS > 6)
+		if(num_players > 6)
 			tempRole.add(ROGUE_ROLE);
-		if(NUM_PLAYERS > 8)
+		if(num_players > 8)
 			tempRole.add(ROGUE_ROLE);
 		//add the rest of the players
-		while(tempRole.size() < NUM_PLAYERS)
+		while(tempRole.size() < num_players)
 			tempRole.add(ANTI_VIRUS_ROLE);
 		//assign randomly
 		Collections.shuffle(tempRole);
@@ -202,32 +210,28 @@ public class Model extends GridWorldModel
 				numYes++;
 		}
 		//if everyone voted
-		if(numYes + numNo == NUM_PLAYERS)
+		if(numYes + numNo == num_players)
 		{
-			if(numYes > numNo)
-				passVote();
-			else
-				failVote();
+			voteComplete = true;
+			if(numYes > numNo){
+				schedulerID = electedSchedulerID;
+			}
+			else{
+				//do we need extra logic if the vote fails?
+			}
+			electedSchedulerID = -1;
 		}
 	}
 	
-	private void passVote()
+	private void clearVotes()
 	{
-		votePassed = true;
-		schedulerID = electedSchedulerID;
-		electedSchedulerID = -1;
-	}
-	
-	private void failVote()
-	{
-		//Passes the kernel to the next player, ex-scheduler stays the same
-		exKernelID = kernelID;
-		kernelID = (kernelID + 1) % NUM_PLAYERS;
-		schedulerID = -1;
-		electedSchedulerID = -1;
+		for(int ag = 0; ag < votes.length; ag++)
+			votes[ag] = NULL_VOTE;
 	}
 	
 	//getters -----------------------------------------
+	
+	public int getNumPlayers(){ return num_players; }
 	
 	public List<Integer> getHand(int ag){ return hand[ag]; }
 	
@@ -245,13 +249,15 @@ public class Model extends GridWorldModel
 	
 	public int getExScheduler(){ return exSchedulerID; }
 	
-	public int getElectedSchedulerID(){ return electedSchedulerID; }
+	public int getElectedScheduler(){ return electedSchedulerID; }
 	
 	public int getNumVirus(){ return numVirusCards; }
 	
 	public int getNumAntiVirus(){ return numAntiVirusCards; }
 	
-	public boolean getVotePassed(){ return votePassed; }
+	public boolean getVoteComplete(){ return voteComplete; }
+	
+	public int getVote(int ag){ return votes[ag]; }
 	
 	public int getHandSize(int ag){
 		return hand[ag].size();	
@@ -276,15 +282,17 @@ public class Model extends GridWorldModel
 	//actions -----------------------------------------
 	
 	public boolean passKernel(int ag){
-		if(!hand[kernelID].isEmpty() || !hand[schedulerID].isEmpty())
+		if(!hand[kernelID].isEmpty() || (schedulerID != -1 && !hand[schedulerID].isEmpty()))
 			return false;
 		
 		exKernelID = kernelID;
-		exSchedulerID = schedulerID;
-		kernelID = (kernelID + 1) % NUM_PLAYERS;
+		if(schedulerID != -1)
+			exSchedulerID = schedulerID;
+		kernelID = (kernelID + 1) % num_players;
 		schedulerID = -1;
 		
-		votePassed = false;
+		voteComplete = false;
+		clearVotes();
 		
 		return true;
 	}
@@ -314,7 +322,7 @@ public class Model extends GridWorldModel
 	
 	public boolean passCards(int ag)
 	{
-		if(ag != kernelID || schedulerID < 0 || schedulerID >= NUM_PLAYERS)
+		if(ag != kernelID || schedulerID < 0 || schedulerID >= num_players)
 			return false;
 		
 		hand[schedulerID].addAll(hand[ag]);
