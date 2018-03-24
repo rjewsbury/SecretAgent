@@ -1,5 +1,5 @@
 //Ending the game
-virusWin :- virusPlayed(V) & V = 6.
+virusWin :- (virusPlayed(V) & V = 6) | virusElected.
 antiVirusWin :- antiVirusPlayed(A) & A = 5.
 
 //Player Elected Position
@@ -55,11 +55,24 @@ isAntiVirus :- role(R) & R = 2.
 	: not isKernel & not isScheduler & voteComplete
 	<-	wait;
 		!play.
-
+		
+		
++!play
+	: isKernel & voteComplete & scheduler(S)
+		& not askedIdentity & virusPlayed(V) & V >= 3
+	<-	.broadcast(achieve, revealIdentity);
+		addMessage('R U HITLER');
+		+askedIdentity;
+		wait;
+		!play.
+		
 //if the vote passed, draw 3 cards
 +!play
 	: isKernel & voteComplete & scheduler(S)
+		& (askedIdentity | (virusPlayed(V) & V < 3))
 	<-	.print("Vote passed. drawing three cards");
+		-askedIdentity;
+		deleteMessage;
 		drawThree;
 		.print("Discarding a card");
 		!discardCard;
@@ -95,6 +108,24 @@ isAntiVirus :- role(R) & R = 2.
 		wait;
 		!play.
 	   
++!revealIdentity
+	: isScheduler & isVirus
+	<-  addMessage('YE DOG');
+		.broadcast(tell, virusElected);
+		wait.
+	
++!revealIdentity
+	: isScheduler & not isVirus & player(X)
+	<-  addMessage('NO U');
+		.broadcast(tell, notVirus(X));
+		wait;
+		deleteMessage.
+	
++!revealIdentity
+	: not isScheduler
+	<- wait.
+	
+		
 +!electScheduler
 	: isKernel
 	<-  ?schedulerCandidate(X);

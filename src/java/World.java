@@ -20,6 +20,8 @@ public class World extends TimeSteppedEnvironment {
 	private static final Literal voteYes = Literal.parseLiteral("voteYes");
 	private static final Literal voteNo = Literal.parseLiteral("voteNo");
 	private static final Literal wait = Literal.parseLiteral("wait");
+	private static final Literal addMessage = Literal.parseLiteral("addMessage");
+	private static final Literal deleteMessage = Literal.parseLiteral("deleteMessage");
 	
 	Model model;
 	View view;
@@ -91,12 +93,17 @@ public class World extends TimeSteppedEnvironment {
 			result = model.playVirus(agentId);
 		else if (action.equals(discardVirus))
 			result = model.discardVirus(agentId);
-		else if (action.equals(voteYes)){
+		else if (action.equals(voteYes))
 			result = model.voteYes(agentId);
-		}
-		else if (action.equals(voteNo)){
+		else if (action.equals(voteNo))
 			result = model.voteNo(agentId);
+		else if(action.getFunctor().equals(addMessage.getFunctor()))
+		{
+			String msg = action.getTerm(0).toString();
+			result = model.addMessage(agentId, msg);
 		}
+		else if (action.equals(deleteMessage))
+			result = model.deleteMessage(agentId);
 		else if (action.equals(wait))
 			result = true;//do nothing
 		
@@ -109,7 +116,7 @@ public class World extends TimeSteppedEnvironment {
 		{
 			if(view != null)
 				view.updateAgents();
-			try { Thread.sleep(200); } catch (InterruptedException x) { }
+			try { Thread.sleep(100); } catch (InterruptedException x) { }
 			updatePercepts();
 		}
 		

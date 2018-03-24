@@ -25,8 +25,8 @@ public class View extends GridWorldView
 		//this is a bad hack to update the rolls of the agents
 		//nothing actually changes in the environment,
 		//so it doesnt update automatically
-		for(int y = 2; y <= 10; y+=8)
-			for(int x = 2; x <= 10; x++)
+		for(int y = 0; y < Model.GRID_HEIGHT; y++)
+			for(int x = 0; x < Model.GRID_WIDTH; x++)
 				update(x,y);
 	}
 	
@@ -56,6 +56,14 @@ public class View extends GridWorldView
 			g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
 			g.setColor(ANTI_VIRUS_COLOR.darker());
 			g.drawRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
+		}
+		if(object == Model.MESSAGE)
+		{
+			int ag = model.getAgAtPos(x, y + 1);
+			String msg = model.getMessage(ag);
+			g.setColor(Color.BLACK);
+			if(msg != null)
+				drawString(g, x, y, defaultFont, msg);
 		}
 	}
 	

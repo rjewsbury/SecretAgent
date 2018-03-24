@@ -14,6 +14,7 @@ public class Model extends GridWorldModel
 	public static final int BOARD = 1 << 4;
 	public static final int VIRUS_CARD = 1 << 5;
 	public static final int ANTI_VIRUS_CARD = 1 << 6;
+	public static final int MESSAGE = 1 << 7;
 	
 	public static final int VIRUS_ROLE = 0;
 	public static final int ROGUE_ROLE = 1;
@@ -53,6 +54,7 @@ public class Model extends GridWorldModel
 	private int[] role;
 	private int[] board;
 	private int[] votes;
+	private String[] messages;
 	
 	private int kernelID = 0;
 	private int exKernelID = -1;
@@ -86,6 +88,7 @@ public class Model extends GridWorldModel
 		//set up roles
 		initRoles();
 		votes = new int[num_players];
+		messages = new String[num_players];
 		clearVotes();
 		//set up the hands
 		hand = new List[num_players];
@@ -118,6 +121,7 @@ public class Model extends GridWorldModel
 					0:
 					8;
 			setAgPos(i, 2+dx, 2+dy);
+			set(MESSAGE, 2+dx, 1+dy);
 		}
 		for(dx = 0; dx < 9; dx++)
 			for(dy = 0; dy < 5; dy++)
@@ -281,6 +285,11 @@ public class Model extends GridWorldModel
 				heldAntiVirus++;
 		return heldAntiVirus;
 	}
+	
+	public String getMessage(int ag)
+	{
+		return messages[ag];
+	}
 
 	//actions -----------------------------------------
 	
@@ -409,6 +418,18 @@ public class Model extends GridWorldModel
 			return false;
 		votes[ag] = NO_VOTE;
 		checkVotes();
+		return true;
+	}
+	
+	public boolean addMessage(int ag, String msg)
+	{
+		messages[ag] = msg;
+		return true;
+	}
+	
+	public boolean deleteMessage(int ag)
+	{
+		messages[ag] = null;
 		return true;
 	}
 }
