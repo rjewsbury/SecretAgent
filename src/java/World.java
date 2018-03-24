@@ -109,7 +109,7 @@ public class World extends TimeSteppedEnvironment {
 		{
 			if(view != null)
 				view.updateAgents();
-			try { Thread.sleep(300); } catch (InterruptedException x) { }
+			try { Thread.sleep(200); } catch (InterruptedException x) { }
 			updatePercepts();
 		}
 		
@@ -142,7 +142,7 @@ public class World extends TimeSteppedEnvironment {
 	 */
 	private void updatePercepts()
 	{
-		clearPercepts();
+		clearAllPercepts();
 		
 		//tell all players about the board state
 		addPercept(Literal.parseLiteral("virusPlayed(" + model.getNumVirus() + ")"));
@@ -154,6 +154,9 @@ public class World extends TimeSteppedEnvironment {
 			for(int i = 0; i < model.getNumPlayers(); i++)
 				addPercept(Literal.parseLiteral("vote(" + i + ", " + model.getVote(i) + ")"));
 		}
+		
+		if(model.getCardPlayed())
+			addPercept(Literal.parseLiteral("cardPlayed"));
 		
 		//tell all players who the kernel is
 		int kernelID = model.getKernel();
@@ -197,6 +200,13 @@ public class World extends TimeSteppedEnvironment {
 		//tell each player what their number is
 		for(int i = 0; i < model.getNumPlayers(); i++)
 			addPercept("player"+i, Literal.parseLiteral("player("+i+")"));
+		
+		//tell players which players are eligible to be elected
+		for(int i = 0; i < model.getNumPlayers(); i++)
+		{
+			if(i != kernelID && i != exKernelID && i != exSchedulerID)
+				addPercept(Literal.parseLiteral("schedulerCandidate(" + i + ")"));
+		}
 	}
 	
 }
