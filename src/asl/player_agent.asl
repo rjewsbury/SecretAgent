@@ -58,6 +58,10 @@ isAntiVirus :- role(R) & R = 2.
 	<- drawThree;
 	   !discardCard.
 	   
++!passKernel
+	: isKernel
+	<- passKernel.
+	   
 +!playCard
 	: isScheduler & heldAntiVirus(A) & A > 0
 	<- playAntiVirus.	
@@ -81,12 +85,14 @@ isAntiVirus :- role(R) & R = 2.
 	: isKernel & isVirus & heldVirus(V) & V = 0
 	<- discardAntiVirus;
 	   passCards;
+	   !passKernel;
 	   !play.
 	
 +!discardCard
 	: isKernel & isVirus & heldVirus(V) & V > 0
 	<- discardVirus;
 	   passCards;
+	   !passKernel;
 	   !play.
 
 		
@@ -131,12 +137,14 @@ isAntiVirus :- role(R) & R = 2.
 	: isKernel & isRogue & heldAntiVirus(A) & A = 0
 	<- discardVirus;
 	   passCards;
+	   !passKernel;
 	   !play.
 	
 +!discardCard
 	: isKernel & isRogue  & heldAntiVirus(A) & A > 1
 	<- discardAntiVirus;
 	   passCards;
+	   !passKernel;
 	   !play.
 	
 		
@@ -181,12 +189,14 @@ isAntiVirus :- role(R) & R = 2.
 	: isKernel & heldVirus(V) & V > 0
 	<- discardVirus;
 	   passCards;
+	   !passKernel;
 	   !play.
 	   
 +!discardCard
 	: isKernel & heldAntiVirus(A) & A = 3
 	<- discardAntiVirus;
 	   passCards;
+	   !passKernel;
 	   !play.
 		
 		//If Scheduler 
