@@ -19,8 +19,8 @@ public class Model extends GridWorldModel
 	public static final int ROGUE_ROLE = 1;
 	public static final int ANTI_VIRUS_ROLE = 2;
 	
-	private static final int GRID_WIDTH = 13;
-	private static final int GRID_HEIGHT = 13;
+	public static final int GRID_WIDTH = 13;
+	public static final int GRID_HEIGHT = 13;
 	
 	private static final int VIRUS_CARDS = 11;
 	private static final int ANTI_VIRUS_CARDS = 6;
@@ -56,11 +56,11 @@ public class Model extends GridWorldModel
 	
 	private int kernelID = 0;
 	private int exKernelID = -1;
-	private int schedulerID = 1;
+	private int schedulerID = -1;
 	private int exSchedulerID = -1;
 	private int electedSchedulerID = -1;
 	
-	private boolean votePassed = false;
+	private boolean voteComplete = false;
 	
 	//initialization ----------------------------------
 	
@@ -85,6 +85,7 @@ public class Model extends GridWorldModel
 		//set up roles
 		initRoles();
 		votes = new int[num_players];
+		clearVotes();
 		//set up the hands
 		hand = new List[num_players];
 		for(int i = 0; i < num_players; i++)
@@ -92,7 +93,7 @@ public class Model extends GridWorldModel
 		//set the kernel
 		kernelID = random.nextInt(num_players);
 
-		/*temporary*/
+		/*temporary*
 		schedulerID = random.nextInt(num_players);
 		while(schedulerID == kernelID){
 			schedulerID = random.nextInt(num_players);
@@ -211,27 +212,21 @@ public class Model extends GridWorldModel
 		//if everyone voted
 		if(numYes + numNo == num_players)
 		{
-			if(numYes > numNo)
-				passVote();
-			else
-				failVote();
+			voteComplete = true;
+			if(numYes > numNo){
+				schedulerID = electedSchedulerID;
+			}
+			else{
+				//do we need extra logic if the vote fails?
+			}
+			electedSchedulerID = -1;
 		}
 	}
 	
-	private void passVote()
+	private void clearVotes()
 	{
-		votePassed = true;
-		schedulerID = electedSchedulerID;
-		electedSchedulerID = -1;
-	}
-	
-	private void failVote()
-	{
-		//Passes the kernel to the next player, ex-scheduler stays the same
-		exKernelID = kernelID;
-		kernelID = (kernelID + 1) % num_players;
-		schedulerID = -1;
-		electedSchedulerID = -1;
+		for(int ag = 0; ag < votes.length; ag++)
+			votes[ag] = NULL_VOTE;
 	}
 	
 	//getters -----------------------------------------
@@ -254,13 +249,15 @@ public class Model extends GridWorldModel
 	
 	public int getExScheduler(){ return exSchedulerID; }
 	
-	public int getElectedSchedulerID(){ return electedSchedulerID; }
+	public int getElectedScheduler(){ return electedSchedulerID; }
 	
 	public int getNumVirus(){ return numVirusCards; }
 	
 	public int getNumAntiVirus(){ return numAntiVirusCards; }
 	
-	public boolean getVotePassed(){ return votePassed; }
+	public boolean getVoteComplete(){ return voteComplete; }
+	
+	public int getVote(int ag){ return votes[ag]; }
 	
 	public int getHandSize(int ag){
 		return hand[ag].size();	
@@ -285,15 +282,17 @@ public class Model extends GridWorldModel
 	//actions -----------------------------------------
 	
 	public boolean passKernel(int ag){
-		if(!hand[kernelID].isEmpty() || !hand[schedulerID].isEmpty())
+		if(!hand[kernelID].isEmpty() || (schedulerID != -1 && !hand[schedulerID].isEmpty()))
 			return false;
 		
 		exKernelID = kernelID;
-		exSchedulerID = schedulerID;
+		if(schedulerID != -1)
+			exSchedulerID = schedulerID;
 		kernelID = (kernelID + 1) % num_players;
 		schedulerID = -1;
 		
-		votePassed = false;
+		voteComplete = false;
+		clearVotes();
 		
 		return true;
 	}

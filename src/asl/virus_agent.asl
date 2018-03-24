@@ -11,28 +11,7 @@ isVirus :- role(R) & R = 0.
 isRogue :- role(R) & R = 1.
 isAntiVirus :- role(R) & R = 2.
 
-//initially assume everyone is a scheduler candidate
-schedulerCandidate(0).
-schedulerCandidate(1).
-schedulerCandidate(2).
-schedulerCandidate(3).
-schedulerCandidate(4).
-schedulerCandidate(5).
-
 !identity.
-
-// DERIVED BELIEFS
-//when someone is elected Kernel, they're no longer a scheduler candidate
-+kernel(K) : true <- -schedulerCandidate(K).
-//when someone is ex Kernel, they're no longer a scheduler candidate
-+exKernel(K) : true <- -schedulerCandidate(K).
-//when someone is ex Scheduler, they're no longer a scheduler candidate
-+exScheduler(S) : true <- -schedulerCandidate(S).
-
-//when agents lose these roles, they become eligible again
--kernel(K) : true <- +schedulerCandidate(K).
--exKernel(K) : true <- +schedulerCandidate(K).
--exScheduler(S) : true <- +schedulerCandidate(S).
 
 //states their roles to the terminal before playing
 +!identity
@@ -59,40 +38,24 @@ schedulerCandidate(5).
 +!play
 	: antiVirusWin
 	<- .print("AntiVirus team wins!").
-	
-//if no scheduler has been elected, elect a scheduler
+	   
 +!play
-	: isKernel & not voteComplete & not electedScheduler(S)
-	<- 	!electScheduler;
-		!play.
+	: isKernel
+	<- 	//?schedulerCandidate(X);
+		//electScheduler(X);
+		?player(ID);
+		.print(ID);
+		!drawCards.
 
 +!play
-	: not voteComplete
-	<-	!vote;
-		.print("Voted. waiting for complete vote");
-		!waitForVote;
-		!play.
+	: isScheduler
+	<- !discardCard.
 
 +!play
-	: not isKernel & not isScheduler & voteComplete
+	: not isKernel
 	<-	wait;
 		!play.
 
-//if the vote passed, draw 3 cards
-+!play
-	: isKernel & voteComplete & scheduler(S)
-	<-	.print("Vote passed. drawing three cards");
-		!drawThree;
-		!play.
-
-//if the vote failed, pass kernel
-+!play
-	: isKernel & voteComplete & not scheduler(S)
-	<-	.print("Vote Failed. Passing Kernel.");
-		wait;
-		passKernel;
-		!play.
-		
 -!play
 	:true
 	<-	.print("FAILED TO PLAY");
@@ -101,42 +64,11 @@ schedulerCandidate(5).
 	   
 +!electScheduler
 	: isKernel
-	<-  ?schedulerCandidate(X);
-		.print("Electing ",X);
-		electScheduler(X);
-		.print("Successfully chose candidate");
+	<-  //?schedulerCandidate(X);
+		//electScheduler(X);
+		.print("ELECT SCHEDULER NOT IMPLEMENTED");
 		!play.
-
-//waits for the kernel to elect a scheduler
-+!vote
-	: not electedScheduler(S)
-	<-	wait;
-		!vote.
-
-+!vote
-	: electedScheduler(S) & player(ID) & S = ID
-	<-	.print("Voting yes");
-		voteYes.
-
-+!vote
-	: electedScheduler(S) & player(ID) & not ( S = ID )
-	<-	.print("Voting yes");
-		voteNo.
-	
-+!vote
-	: true
-	<- .print("HOW DID I GET HERE?!?!?!").
-
-+!waitForVote
-	: not voteComplete
-	<-	wait;
-		!waitForVote.
-	
-+!waitForVote
-	: voteComplete
-	<-	//do something with the information about votes
-		.print("Done waiting for votes!").
-	
+		
 +!drawCards
 	: isKernel
 	<- drawThree;

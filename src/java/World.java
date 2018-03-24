@@ -5,22 +5,24 @@ import jason.environment.grid.Location;
 import java.util.List;
 import java.util.logging.*;
 
-public class World extends Environment {
+public class World extends TimeSteppedEnvironment {
 
 	private Logger logger = Logger.getLogger("secretagent."+World.class.getName());
 	
+	private static final Literal passKernel = Literal.parseLiteral("passKernel");
+	private static final Literal electScheduler = Literal.parseLiteral("electScheduler");
 	private static final Literal drawThree = Literal.parseLiteral("drawThree");
 	private static final Literal passCards = Literal.parseLiteral("passCards");
-	private static final Literal passKernel = Literal.parseLiteral("passKernel");
-	private static final Literal playAntiVirus = Literal.parseLiteral("playAntiVirus");
+	private static final Literal discardVirus = Literal.parseLiteral("discardVirus");
 	private static final Literal discardAntiVirus = Literal.parseLiteral("discardAntiVirus");
 	private static final Literal playVirus = Literal.parseLiteral("playVirus");
-	private static final Literal discardVirus = Literal.parseLiteral("discardVirus");
+	private static final Literal playAntiVirus = Literal.parseLiteral("playAntiVirus");
 	private static final Literal voteYes = Literal.parseLiteral("voteYes");
 	private static final Literal voteNo = Literal.parseLiteral("voteNo");
 	private static final Literal wait = Literal.parseLiteral("wait");
 	
 	Model model;
+	View view;
 
 	/** Called before the MAS execution with the args informed in .mas2j */
 	
@@ -52,10 +54,16 @@ public class World extends Environment {
 		
 		if (use_gui)
 		{
-			View view = new View(model);
+			view = new View(model);
 			model.setView(view);
 		}
 		try { Thread.sleep(2000); } catch (InterruptedException x) { }
+		
+		//Makes all the squares turn white at the start
+		for(int x = 0; x < model.GRID_WIDTH; x++)
+			for(int y = 0; y < model.GRID_HEIGHT; y++)
+				view.update(x, y);
+		
 		updatePercepts();
 	}
 
@@ -64,34 +72,44 @@ public class World extends Environment {
 		
 		boolean result = false;
 		int agentId = Integer.parseInt(agName.substring(agName.length() - 1));
-		
-		if (action.equals(drawThree))
-			result = model.drawThree(agentId);
-		if (action.equals(passCards))
-			result = model.passCards(agentId);
 		if (action.equals(passKernel))
 			result = model.passKernel(agentId);
-		if (action.equals(playAntiVirus))
+		else if(action.getFunctor().equals(electScheduler.getFunctor()))
+			try{
+				int elected = Integer.parseInt(action.getTerm(0).toString());
+				result = model.electScheduler(agentId, elected);
+			}catch(NumberFormatException e){}
+		else if (action.equals(passCards))
+			result = model.passCards(agentId);
+		else if (action.equals(drawThree))
+			result = model.drawThree(agentId);
+		else if (action.equals(playAntiVirus))
 			result = model.playAntiVirus(agentId);
-		if (action.equals(discardAntiVirus))
+		else if (action.equals(discardAntiVirus))
 			result = model.discardAntiVirus(agentId);
-		if (action.equals(playVirus))
+		else if (action.equals(playVirus))
 			result = model.playVirus(agentId);
-		if (action.equals(discardVirus))
+		else if (action.equals(discardVirus))
 			result = model.discardVirus(agentId);
-		if (action.equals(voteYes))
+		else if (action.equals(voteYes)){
 			result = model.voteYes(agentId);
-		if (action.equals(voteNo))
+		}
+		else if (action.equals(voteNo)){
 			result = model.voteNo(agentId);
-		if (action.equals(wait))
+		}
+		else if (action.equals(wait))
 			result = true;//do nothing
 		
 		else
 			logger.info("executing: "+action+", but not implemented!");
 		
+		//logger.info("player "+agentId+" did something!");
+		
 		if (result)
 		{
-			try { Thread.sleep(2000); } catch (InterruptedException x) { }
+			if(view != null)
+				view.updateAgents();
+			try { Thread.sleep(300); } catch (InterruptedException x) { }
 			updatePercepts();
 		}
 		
@@ -104,6 +122,24 @@ public class World extends Environment {
 		super.stop();
 	}
 	
+	/**
+	 * List of percepts given:
+	 *
+	 * GLOBALLY VISIBLE:
+	 * virusPlayed(X)		- the number of virus cards on the board
+	 * antiVirusPlayed(X)	- the number of antivirus cards on the board
+	 * kernel(X)			- the player ID of the kernel
+	 * exKernel(X)			- the player ID of the previous kernel
+	 * scheduler(X)			- the player ID of the scheduler
+	 * exScheduler(X)		- the player ID of the previous scheduler
+	 * electedScheduler(X)	- the player ID of the proposed new scheduler
+	 *
+	 * INDIVIDUALLY VISIBLE:
+	 * role(X)				- 0 for virus, 1 for rogue, 2 for antivirus
+	 * player(X)			- tells the player what their ID is
+	 * heldVirus(X)			- the number of virus cards the agent holds
+	 * heldAntiVirus(X)		- the number of antivirus cards held
+	 */
 	private void updatePercepts()
 	{
 		clearPercepts();
@@ -111,6 +147,13 @@ public class World extends Environment {
 		//tell all players about the board state
 		addPercept(Literal.parseLiteral("virusPlayed(" + model.getNumVirus() + ")"));
 		addPercept(Literal.parseLiteral("antiVirusPlayed(" + model.getNumAntiVirus() + ")"));
+		
+		//tell all players about the vote state
+		if(model.getVoteComplete()){
+			addPercept(Literal.parseLiteral("voteComplete"));
+			for(int i = 0; i < model.getNumPlayers(); i++)
+				addPercept(Literal.parseLiteral("vote(" + i + ", " + model.getVote(i) + ")"));
+		}
 		
 		//tell all players who the kernel is
 		int kernelID = model.getKernel();
@@ -141,6 +184,11 @@ public class World extends Environment {
 		int exSchedulerID = model.getExScheduler();
 		if(exSchedulerID != -1)
 			addPercept(Literal.parseLiteral("exScheduler(" + exSchedulerID + ")"));
+		
+		//tell players who the elected scheduler is
+		int electedSchedulerID = model.getElectedScheduler();
+		if(electedSchedulerID != -1)
+			addPercept(Literal.parseLiteral("electedScheduler(" + electedSchedulerID + ")"));
 		
 		//tell each player what their role is
 		for(int i = 0; i < model.getNumPlayers(); i++)
