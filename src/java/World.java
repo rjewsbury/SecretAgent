@@ -1,9 +1,11 @@
 import jason.asSyntax.*;
 import jason.environment.*;
 import jason.environment.grid.Location;
+import jason.mas2j.ClassParameters;
 
 import java.util.List;
 import java.util.logging.*;
+import javax.swing.JOptionPane;
 
 public class World extends TimeSteppedEnvironment {
 
@@ -23,6 +25,7 @@ public class World extends TimeSteppedEnvironment {
 	private static final Literal addMessage = Literal.parseLiteral("addMessage");
 	private static final Literal deleteMessage = Literal.parseLiteral("deleteMessage");
 	
+	private boolean use_gui;
 	Model model;
 	View view;
 
@@ -32,24 +35,19 @@ public class World extends TimeSteppedEnvironment {
 	public void init(String[] args) {
 		super.init(args);
 		
-		int num_players;
-		boolean use_gui = false;
-		//first optional argument is the number of players
-		//second optional argument is the 
+		use_gui = false;
+		//first optional argument is the use of a gui
 		if (args.length > 0){
-			try{
-				num_players = Integer.valueOf(args[0]);
-				use_gui = (args.length > 1 && args[1].equals("gui"));
-			}catch(NumberFormatException e){
-				//if it wasnt a number, use the default number
-				num_players = Model.DEFAULT_PLAYERS;
-				//check if the argument was to use a gui
-				use_gui = args[0].equals("gui");
-			}
+			use_gui = args[0].equals("gui");
 		}
-		else{
-			num_players = Model.DEFAULT_PLAYERS;
-		}
+		
+		//ask the user to initialize the number of agents
+		Object[] options = {5,6,7,8,9,10};
+		int option_index = JOptionPane.showOptionDialog(null,
+			"Choose how many agents should play.", "Number of Players",
+			JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+			null, options, options[1]);
+		int num_players = (Integer)options[option_index];
 		
 		//create the model
 		model = new Model(num_players);
@@ -66,7 +64,36 @@ public class World extends TimeSteppedEnvironment {
 			for(int y = 0; y < model.GRID_HEIGHT; y++)
 				view.update(x, y);
 		
+		addAgents();
 		updatePercepts();
+	}
+	
+	private void addAgents() {
+		int num_players = model.getNumPlayers();
+		String agentClass;
+		String bbClass;
+		ClassParameters bbParams;
+		for(int i = 0; i < num_players; i++)
+		{
+			if(model.getRole(i) == model.VIRUS_ROLE){
+			}
+			agentClass = "player_agent.asl";
+			//bbClass = "ShortestPathBeliefBase";
+			bbParams = new ClassParameters();
+			try {
+				getEnvironmentInfraTier().getRuntimeServices().
+					createAgent(
+						"player_"+i,	// agent name
+						agentClass,		// AgentSpeak source
+						null,			// default agent class
+						null,			// default architecture class
+						bbParams,		// default belief base parameters
+						null,			// default settings
+						null);			
+			}catch(Exception e){
+				System.out.println("Failed to make agent #"+i);
+			}
+		}
 	}
 
 	@Override
