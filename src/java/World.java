@@ -24,6 +24,7 @@ public class World extends TimeSteppedEnvironment {
 	private static final Literal wait = Literal.parseLiteral("wait");
 	private static final Literal addMessage = Literal.parseLiteral("addMessage");
 	private static final Literal deleteMessage = Literal.parseLiteral("deleteMessage");
+	private static final Literal deleteAgent = Literal.parseLiteral("deleteAgent");
 	
 	//currently, the simulation is only designed for 6 players.
 	//however the model itself can handle 5-10, for future development
@@ -105,6 +106,11 @@ public class World extends TimeSteppedEnvironment {
 		}
 		else if (action.equals(deleteMessage))
 			result = model.deleteMessage(agentId);
+		else if(action.getFunctor().equals(deleteAgent.getFunctor()))
+			try{
+				int target = Integer.parseInt(action.getTerm(0).toString());
+				result = model.deleteAgent(agentId, target);
+			}catch(NumberFormatException e){}
 		else if (action.equals(wait)){
 			result = true;//do nothing
 		}
@@ -214,10 +220,29 @@ public class World extends TimeSteppedEnvironment {
 		//tell players which players are eligible to be elected
 		for(int i = 0; i < model.getNumPlayers(); i++)
 		{
-			if(i != kernelID && i != exKernelID && i != exSchedulerID)
-				addPercept(Literal.parseLiteral("schedulerCandidate(" + i + ")"));
+			if(i != kernelID && (i != exKernelID || model.getNumAlive() < 6) && i != exSchedulerID && model.getAlive(i))
+				addPercept(Literal.parseLiteral("schedulerCandidate("+i+")"));
 		}
 		
+		//Giving the Kernel a bullet
+		if(model.getBoardAbility() == model.DELETE_AGENT)
+		{
+			addPercept(model.getName(kernelID), Literal.parseLiteral("hasBullet"));
+		}
+		
+		//Bullet Candidates
+		for(int i = 0; i < model.getNumPlayers(); i++)
+		{
+			if(i != kernelID && model.getAlive(i))
+				addPercept(Literal.parseLiteral("deleteCandidate("+i+")"));
+		}
+		
+		//All agents know if an agent is dead
+		for(int i = 0; i < model.getNumPlayers(); i++)
+		{
+			if(!model.getAlive(i))
+				addPercept(Literal.parseLiteral("dead("+i+")"));
+		}
 		
 		//Rogue and Virus know who all others are
 		for(int i = 0; i < model.getNumPlayers(); i++)
@@ -226,11 +251,11 @@ public class World extends TimeSteppedEnvironment {
 				for(int j = 0; j < model.getNumPlayers(); j++)
 				{
 					if(model.getRole(j) == model.VIRUS_ROLE)
-						addPercept("player"+i, Literal.parseLiteral("isVirus("+j+")"));
+						addPercept(model.getName(i), Literal.parseLiteral("isVirus("+j+")"));
 					else if(model.getRole(j) == model.ROGUE_ROLE)
-						addPercept("player"+i, Literal.parseLiteral("isRogue("+j+")"));
+						addPercept(model.getName(i), Literal.parseLiteral("isRogue("+j+")"));
 					else
-						addPercept("player"+i, Literal.parseLiteral("isAntiVirus("+j+")"));
+						addPercept(model.getName(i), Literal.parseLiteral("isAntiVirus("+j+")"));
 				}
 		}
 	}

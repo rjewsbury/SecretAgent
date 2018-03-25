@@ -42,7 +42,7 @@ public class VirusBeliefBase extends PlayerBeliefBase
 	{
 		Iterator<Literal> i;
 		int kernelID = getKernelID();
-		int schedulerDID = getSchedulerID();
+		int electedSchedulerID = getElectedSchedulerID();
 		int NO_VOTE = 0;
 		int YES_VOTE = 1;
 		int vote = -1;
@@ -77,6 +77,28 @@ public class VirusBeliefBase extends PlayerBeliefBase
 		Literal voteDecision = Literal.parseLiteral("discardDecision(1)");
 		List<Literal> result = new ArrayList<Literal>();
 		result.add(voteDecision);
+		return result.iterator();
+	}
+	
+	public Iterator<Literal> getDeleteDecision(Literal l, Unifier u)
+	{		
+		Iterator<Literal> i = getDefaultBeliefs(Literal.parseLiteral("deleteCandidate(X)"), null);
+		ArrayList<Integer> candidates = new ArrayList<Integer>();
+		Literal candidate;
+		
+		while(i.hasNext())
+		{
+			candidate = i.next();
+			Term[] candidate_terms = candidate.getTermsArray();
+			int agentID = Integer.parseInt(candidate_terms[0].toString());
+			candidates.add(agentID);
+		}
+		Random r = new Random();
+		int pick = r.nextInt(candidates.size()); 
+		int agentID = candidates.get(pick);
+		candidate = Literal.parseLiteral("deleteDecision(" + agentID +")");
+		List<Literal> result = new ArrayList<Literal>();
+		result.add(candidate);
 		return result.iterator();
 	}
 }

@@ -7,6 +7,7 @@ public class View extends GridWorldView
 {
 	private static final Color VIRUS_COLOR = new Color(188, 15, 15);
 	private static final Color ROGUE_COLOR = new Color(244, 66, 66);
+	private static final Color DEAD_COLOR = Color.GRAY;
 	private static final Color ANTI_VIRUS_COLOR = new Color(66, 134, 244);
 	private static final Color TABLE_COLOR = new Color(188, 99, 43);
 	
@@ -82,19 +83,20 @@ public class View extends GridWorldView
 	public void drawAgent(Graphics g, int x, int y, Color c, int id){
 		
 		String display = "";
-		
-		if(model.getRole(id) == model.VIRUS_ROLE)
+		if(!model.getAlive(id))
+			super.drawAgent(g,x,y,DEAD_COLOR,-1);
+		else if(model.getRole(id) == model.VIRUS_ROLE)
 			super.drawAgent(g,x,y,VIRUS_COLOR,-1);
-		if(model.getRole(id) == model.ROGUE_ROLE)
+		else if(model.getRole(id) == model.ROGUE_ROLE)
 			super.drawAgent(g,x,y,ROGUE_COLOR,-1);
-		if(model.getRole(id) == model.ANTI_VIRUS_ROLE)
+		else if(model.getRole(id) == model.ANTI_VIRUS_ROLE)
 			super.drawAgent(g,x,y,ANTI_VIRUS_COLOR,-1);
 		
 		if(model.getKernel() == id)
 			display += "K";
 		else if(model.getScheduler() == id)
 			display += "S";
-		else if(model.getExKernel() == id)
+		else if(model.getExKernel() == id && model.getNumAlive() > 5)
 			display += "Ex-K";
 		else if(model.getExScheduler() == id)
 			display += "Ex-S";

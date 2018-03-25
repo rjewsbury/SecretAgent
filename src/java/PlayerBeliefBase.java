@@ -16,6 +16,8 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 			return getVoteDecision(l, u);
 		else if(l.getFunctor().equals("discardDecision"))
 			return getDiscardDecision(l, u);
+		else if(l.getFunctor().equals("deleteDecision"))
+			return getDeleteDecision(l, u);
 		else	
 			return super.getCandidateBeliefs(l, u);
 	}
@@ -32,38 +34,34 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 	
 	public abstract Iterator<Literal> getDiscardDecision(Literal l, Unifier u);
 	
+	public abstract Iterator<Literal> getDeleteDecision(Literal l, Unifier u);
+	
 	//Get your belief on the rolea of the Kernel
 	public int getKernelID()
 	{
-		Iterator<Literal> percepts = getPercepts();
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("kernel(X)"), null);
 		while (percepts.hasNext())
 		{
 			Literal p = percepts.next();
 			//Get the Kernel ID
-			if (p.getFunctor().equals("kernel"))
-			{
-				Term[] terms = p.getTermsArray();
-				int kernelID = Integer.parseInt(terms[0].toString());
-				return kernelID;
-			}
+			Term[] terms = p.getTermsArray();
+			int kernelID = Integer.parseInt(terms[0].toString());
+			return kernelID;
 		}
 		return -1;
 	}
 	
 	//Get your belief on the role of the Scheduler
-	public int getSchedulerID()
+	public int getElectedSchedulerID()
 	{
-		Iterator<Literal> percepts = getPercepts();
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("electedScheduler(X)"), null);
 		while (percepts.hasNext())
 		{
 			Literal p = percepts.next();
-			//Get the Scheduler ID
-			if (p.getFunctor().equals("scheduler"))
-			{
-				Term[] terms = p.getTermsArray();
-				int schedulerID = Integer.parseInt(terms[0].toString());
-				return schedulerID;
-			}
+			//Get the Elected Scheduler ID
+			Term[] terms = p.getTermsArray();
+			int electedSchedulerID = Integer.parseInt(terms[0].toString());
+			return electedSchedulerID;
 		}
 		return -1;
 	}

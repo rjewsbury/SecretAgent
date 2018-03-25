@@ -11,6 +11,9 @@ isVirus :- role(R) & R = 0.
 isRogue :- role(R) & R = 1.
 isAntiVirus :- role(R) & R = 2.
 
+//Dead
+isDead :- player(X) & dead(Y) & X = Y.
+
 !identity.
 
 //states their roles to the terminal before playing
@@ -37,6 +40,11 @@ isAntiVirus :- role(R) & R = 2.
 +!play
 	: antiVirusWin
 	<- .print("AntiVirus team wins!").
+
++!play
+	: isDead
+	<-  wait;
+		!play.
 	
 //if no scheduler has been elected, elect a scheduler
 +!play
@@ -70,8 +78,17 @@ isAntiVirus :- role(R) & R = 2.
 		addMessage('R U HITLER');
 		.print("Asking identity");
 		+askedIdentity;
-		wait;
+		!waitForResponse(S);
 		!play.
+		
++!waitForResponse(S)
+	: notVirus(S) | virusElected
+	<- wait.
+	
++!waitForResponse(S)
+	: true
+	<- 	wait;
+		!waitForResponse(S).
 		
 //if the vote passed, draw 3 cards
 +!play
@@ -87,10 +104,12 @@ isAntiVirus :- role(R) & R = 2.
 		passCards;
 		.print("Waiting for scheduler");
 		!waitForScheduler;
-		.print("Passing kernel")
+		.print("Using ability");
+		!useAbility;
+		.print("Passing kernel");
 		passKernel;
 		!play.
-
+		
 //if you're the scheduler, you should be passed 2 cards.
 +!play
 	: isScheduler & voteComplete & ( heldVirus(V) | heldAntiVirus(A))
@@ -229,3 +248,13 @@ isAntiVirus :- role(R) & R = 2.
 +!playCard
 	: isScheduler & heldVirus(V) & V > 0
 	<- playVirus.
+	
++!useAbility
+	: hasBullet
+	<-	?deleteDecision(X);
+		.print("Using Bullet on ", X);
+		deleteAgent(X).
+		
++!useAbility
+	: true
+	<- wait.

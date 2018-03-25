@@ -31,22 +31,22 @@ public class Model extends GridWorldModel
 	private static final int NO_VOTE = 0;
 	private static final int YES_VOTE = 1;
 	
-	private static final int NO_ABILITY = 0;
+	public static final int NO_ABILITY = 0;
 	private static final int CHECK_STACK_3 = 1;
 	private static final int INSPECT_ELEMENT = 2;
 	private static final int ASSIGN_KERNEL = 3;
-	private static final int DELETE_AGENT = 4;
+	public static final int DELETE_AGENT = 4;
 	
-	private static final int[] BOARD5_6 =	{0,0,1,4,4,0};
-	private static final int[] BOARD7_8 =	{0,2,3,4,4,0};
-	private static final int[] BOARD9_10 =	{2,2,3,4,4,0};
+	private static final int[] BOARD5_6 =	{0,0,0,4,4,0};//{0,0,1,4,4,0};
+	private static final int[] BOARD7_8 =	{0,0,0,4,4,0};//{0,2,3,4,4,0};
+	private static final int[] BOARD9_10 =	{0,0,0,4,4,0};//{2,2,3,4,4,0};
 	
 	//variables ---------------------------------------
 	
 	private int num_players;
 	
-	private int numVirusCards;
-	private int numAntiVirusCards;
+	private int numVirusPlayed;
+	private int numAntiVirusPlayed;
 	private List<Integer> deck;
 	private List<Integer> discard;
 	private List<Integer>[] hand;
@@ -56,6 +56,7 @@ public class Model extends GridWorldModel
 	private int[] board;
 	private int[] votes;
 	private String[] messages;
+	private boolean[] alive;
 	
 	private int kernelID = 0;
 	private int exKernelID = -1;
@@ -82,14 +83,16 @@ public class Model extends GridWorldModel
 		//set up view positions
 		initPositions();
 		//initially no cards are played
-		numVirusCards = 0;
-		numAntiVirusCards = 0;
+		numVirusPlayed = 0;
+		numAntiVirusPlayed = 0;
 		//set up the deck
 		initDecks();
 		//set up roles
 		initRoles();
 		votes = new int[num_players];
 		messages = new String[num_players];
+		alive = new boolean[num_players];
+		Arrays.fill(alive, true);
 		clearVotes();
 		//set up the hands
 		hand = new List[num_players];
@@ -223,9 +226,9 @@ public class Model extends GridWorldModel
 	
 	private void updateBoardCards()
 	{
-		for(int i = 0; i < numVirusCards; i++)
+		for(int i = 0; i < numVirusPlayed; i++)
 			set(VIRUS_CARD, 3+i, 5);
-		for(int i = 0; i < numAntiVirusCards; i++)
+		for(int i = 0; i < numAntiVirusPlayed; i++)
 			set(ANTI_VIRUS_CARD, 3+i, 7);
 	}
 	
@@ -233,6 +236,7 @@ public class Model extends GridWorldModel
 	{
 		int numYes = 0;
 		int numNo = 0;
+		
 		for(int i = 0; i < votes.length; i++)
 		{
 			if(votes[i] == NO_VOTE)
@@ -241,7 +245,7 @@ public class Model extends GridWorldModel
 				numYes++;
 		}
 		//if everyone voted
-		if(numYes + numNo == num_players)
+		if(numYes + numNo == getNumAlive())
 		{
 			voteComplete = true;
 			if(numYes > numNo){
@@ -263,6 +267,20 @@ public class Model extends GridWorldModel
 	//getters -----------------------------------------
 	
 	public int getNumPlayers(){ return num_players; }
+
+	public int getBoardAbility()
+	{
+		return numVirusPlayed == 0 ? NO_ABILITY : board[numVirusPlayed - 1];
+	}
+	
+	public int getNumAlive()
+	{ 
+		int numAlive = 0;
+		for(boolean b: alive)
+			if(b)
+				numAlive++;
+		return numAlive; 
+	}
 	
 	public List<Integer> getHand(int ag){ return hand[ag]; }
 	
@@ -277,10 +295,6 @@ public class Model extends GridWorldModel
 		return -1;
 	}
 	
-	public int getBoardPower(int numVirus){
-		return numVirus == 0 ? NO_ABILITY : board[numVirus - 1];
-	}
-	
 	public int getKernel(){ return kernelID; }
 	
 	public int getScheduler(){ return schedulerID; }
@@ -291,9 +305,9 @@ public class Model extends GridWorldModel
 	
 	public int getElectedScheduler(){ return electedSchedulerID; }
 	
-	public int getNumVirus(){ return numVirusCards; }
+	public int getNumVirus(){ return numVirusPlayed; }
 	
-	public int getNumAntiVirus(){ return numAntiVirusCards; }
+	public int getNumAntiVirus(){ return numAntiVirusPlayed; }
 	
 	public boolean getVoteComplete(){ return voteComplete; }
 	
@@ -325,6 +339,11 @@ public class Model extends GridWorldModel
 	{
 		return messages[ag];
 	}
+	
+	public boolean getAlive(int ag)
+	{
+		return alive[ag];
+	}
 
 	//actions -----------------------------------------
 	
@@ -336,12 +355,13 @@ public class Model extends GridWorldModel
 		if(schedulerID != -1)
 			exSchedulerID = schedulerID;
 		kernelID = (kernelID + 1) % num_players;
+		while(!getAlive(kernelID))
+			kernelID = (kernelID + 1) % num_players;
 		schedulerID = -1;
 		
 		voteComplete = false;
 		cardPlayed = false;
 		clearVotes();
-		
 		return true;
 	}
 	
@@ -350,6 +370,15 @@ public class Model extends GridWorldModel
 		if(electedSchedulerID != -1 || ag != kernelID)
 			return false;
 		electedSchedulerID = target;
+		return true;
+	}
+	
+	public boolean deleteAgent(int ag, int target)
+	{
+		if(ag != kernelID || board[numVirusPlayed] != DELETE_AGENT)
+			return false;
+		alive[target] = false;
+		board[numVirusPlayed - 1] = NO_ABILITY;
 		return true;
 	}
 	
@@ -414,7 +443,7 @@ public class Model extends GridWorldModel
 		//to call remove(Object) instead of remove(int)
 		boolean success = hand[ag].remove(Integer.valueOf(VIRUS_CARD));
 		if(success){
-			numVirusCards++;
+			numVirusPlayed++;
 			cardPlayed = true;
 			updateBoardCards();
 			updateHand(ag);
@@ -429,7 +458,7 @@ public class Model extends GridWorldModel
 		//to call remove(Object) instead of remove(int)
 		boolean success = hand[ag].remove(Integer.valueOf(ANTI_VIRUS_CARD));
 		if(success){
-			numAntiVirusCards++;
+			numAntiVirusPlayed++;
 			cardPlayed = true;
 			updateBoardCards();
 			updateHand(ag);
