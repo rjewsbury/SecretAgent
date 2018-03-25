@@ -32,14 +32,23 @@ isDead :- player(X) & dead(Y) & X = Y.
 	<- .print("I am a Virus");
 	   !play.
 	   
++!waitForever
+	:true
+	<-	wait;
+		!waitForever.
+	   
 //Win conditions
+//with a time stepped environment, every agent needs to pick an action
+//for the game to continue. this allows everybody else to catch up
 +!play
 	: virusWin
-	<- .print("Virus team wins!").
+	<-	.print("Virus team wins!");
+		!waitForever.
 	
 +!play
 	: antiVirusWin
-	<- .print("AntiVirus team wins!").
+	<-  .print("AntiVirus team wins!");
+		!waitForever.
 
 +!play
 	: isDead
@@ -55,7 +64,6 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!play
 	: not voteComplete
 	<-	!vote;
-		.print("Voted. waiting for complete vote");
 		!waitForVote;
 		!play.
 
@@ -75,7 +83,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 	: isKernel & voteComplete & scheduler(S)
 		& not askedIdentity & virusPlayed(V) & V >= 3
 	<-	.broadcast(achieve, revealIdentity);
-		addMessage('R U HITLER');
+		addMessage('ARE YOU A VIRUS?');
 		.print("Asking identity");
 		+askedIdentity;
 		!waitForResponse(S);
@@ -164,8 +172,14 @@ isDead :- player(X) & dead(Y) & X = Y.
 	<-  ?schedulerCandidate(X);
 		.print("Electing Player ",X);
 		addMessage('Electing ',X);
-		electScheduler(X);
-		.print("Successfully chose candidate").
+		electScheduler(X).
+
+//if this agent still believes he's interpreted votes from last round
+//remove the beliefs
++!vote
+	: interpretedVote(P)
+	<-	-interpretedVote(P);
+		!vote.
 
 //waits for the kernel to elect a scheduler
 +!vote
@@ -182,11 +196,13 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!submitVote(Y)
 	: Y = 0
 	<-	addMessage('NEIN!');
+		.print("Voting No");
 		voteNo.
 	
 +!submitVote(Y)
 	: Y = 1
 	<-	addMessage('JA!');
+		.print("Voting Yes");
 		voteYes.
 	
 +!vote
@@ -201,18 +217,61 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!waitForVote
 	: voteComplete
 	<-	//do something with the information about votes
-		deleteMessage;
-		.print("Done waiting for votes!").
+		!interpretVotes
+		deleteMessage.
 		
+//if this agent has never seen that player vote before, create a trust belief
++!interpretVotes
+	: vote(P, X) & not trust(P, Y)
+	<-	+trust(P, 0);
+		!interpretVotes.
+
+//if this player voted the same thing as another player, trust them a bit more
++!interpretVotes
+	: player(ID) & vote(ID, X)
+		& vote(P, Y) & trust(P, T) & not interpretedVote(P)
+		& X = Y
+	<-	-trust(P, T);
+		+trust(P, T+1);
+		+interpretedVote(P);
+		!interpretVotes.
+
++!interpretVotes
+	: player(ID) & vote(ID, X)
+		& vote(P, Y) & trust(P, T) & not interpretedVote(P)
+		& not(X = Y)
+	<-	-trust(P, T);
+		+trust(P, T-1);
+		+interpretedVote(P);
+		!interpretVotes.
+
++!interpretVotes
+	: not ( vote(P, Y) & not interpretedVote(P) )
+	<-	wait.
+
+//wait for the card to be played
 +!waitForScheduler
 	: not cardPlayed
 	<-	wait;
 		!waitForScheduler.
-	
+
+//once a card is played, update trust
 +!waitForScheduler
 	: cardPlayed
-	<-	//do something with the information about votes
-		.print("Done waiting for Scheduler!").
+	<-	//do something with the information about the card playes
+		!interpretCardPlayed;
+		wait.
+		
+//change the trust value based on what card was played
++!interpretCardPlayed
+	: scheduler(S) & trust(S, T) & virusPlayed
+	<-	-trust(S, T);
+		+trust(S, T-5).
+		
++!interpretCardPlayed
+	: scheduler(S) & trust(S, T) & antiVirusPlayed
+	<-	-trust(S, T);
+		+trust(S, T+5).
 
 //decides how to discard a card.
 //if there's no choice to be made, automatically decides
@@ -243,11 +302,13 @@ isDead :- player(X) & dead(Y) & X = Y.
 //only the scheduler can play cards, and there should be no decision to make
 +!playCard
 	: isScheduler & heldAntiVirus(A) & A > 0
-	<- playAntiVirus.	
+	<-	.print("Playing Antivirus");
+		playAntiVirus.	
 
 +!playCard
 	: isScheduler & heldVirus(V) & V > 0
-	<- playVirus.
+	<- 	.print("Playing Virus");
+		playVirus.
 	
 +!useAbility
 	: hasBullet
