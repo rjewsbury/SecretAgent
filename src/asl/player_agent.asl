@@ -1,6 +1,6 @@
 //Ending the game
-virusWin :- (virusPlayed(V) & V = 6) | virusElected.
-antiVirusWin :- antiVirusPlayed(A) & A = 5.
+virusWin :- (virusPlayed(V) & V = 6) | (scheduler(S) & virusRevealed(X) & S=X).
+antiVirusWin :- (antiVirusPlayed(A) & A = 5) | (virusRevealed(V) & dead(X) & V=X).
 
 //Player Elected Position
 isKernel :- kernel(K) & player(N) & N = K.
@@ -82,12 +82,16 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!play
 	: isKernel & voteComplete & scheduler(S)
 		& not askedIdentity & virusPlayed(V) & V >= 3
-	<-	.broadcast(achieve, revealIdentity);
+	<-	!askIdentity(S);
+		!play.
+		
++!askIdentity(S)
+	: true
+	<-	.broadcast(achieve, revealIdentity(S));
 		addMessage('ARE YOU A VIRUS?');
 		.print("Asking identity");
 		+askedIdentity;
-		!waitForResponse(S);
-		!play.
+		!waitForResponse(S).
 		
 +!waitForResponse(S)
 	: notVirus(S) | virusElected
@@ -103,6 +107,8 @@ isDead :- player(X) & dead(Y) & X = Y.
 	: isKernel & voteComplete & scheduler(S)
 		& (askedIdentity | (virusPlayed(V) & V < 3))
 	<-	.print("Vote passed. drawing three cards");
+			//once we've started playing the round, we dont need to remember
+			//that we asked for an identity
 		-askedIdentity;
 		deleteMessage;
 		drawThree;
@@ -149,21 +155,21 @@ isDead :- player(X) & dead(Y) & X = Y.
 		wait;
 		!play.
 	   
-+!revealIdentity
-	: isScheduler & isVirus
++!revealIdentity(X)
+	: player(P) & P=X & isVirus
 	<-  .print("Revealing Identity: VIRUS");
 		addMessage('YE DOG');
-		.broadcast(tell, virusElected);
+		.broadcast(tell, virusRevealed(P));
 		wait.
 	
-+!revealIdentity
-	: isScheduler & not isVirus & player(X)
++!revealIdentity(X)
+	: player(P) & P=X & not isVirus
 	<-  .print("Revealing Identity: NOT VIRUS");
 		addMessage('NO U');
-		.broadcast(tell, notVirus(X)).
+		.broadcast(tell, notVirus(P)).
 	
-+!revealIdentity
-	: not isScheduler
++!revealIdentity(X)
+	: player(P) & not(P=X)
 	<- wait.
 	
 		
@@ -314,7 +320,8 @@ isDead :- player(X) & dead(Y) & X = Y.
 	: hasBullet
 	<-	?deleteDecision(X);
 		.print("Using Bullet on ", X);
-		deleteAgent(X).
+		deleteAgent(X)
+		!askIdentity(X).
 		
 +!useAbility
 	: true
