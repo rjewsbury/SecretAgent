@@ -10,13 +10,13 @@ public class View extends GridWorldView
 	private static final Color ANTI_VIRUS_COLOR = new Color(66, 134, 244);
 	private static final Color TABLE_COLOR = new Color(188, 99, 43);
 	
+	Font defaultFont = new Font("Arial", Font.BOLD, 15);
 	Model model;
 	
 	public View(Model _model)
 	{
 		super(_model, "My View", 700);
 		this.model = _model;
-		Font defaultFont = new Font("Arial", Font.BOLD, 15);
 		setVisible(true);
 		repaint();
 	}
@@ -27,7 +27,19 @@ public class View extends GridWorldView
 		//so it doesnt update automatically
 		for(int y = 0; y < Model.GRID_HEIGHT; y++)
 			for(int x = 0; x < Model.GRID_WIDTH; x++)
-				update(x,y);
+				if(model.getAgAtPos(x,y) != -1)
+					update(x,y);
+	}
+	
+	public void updateMessages()
+	{
+		for(int y = 0; y < Model.GRID_HEIGHT; y++)
+			for(int x = 0; x < Model.GRID_WIDTH; x++)
+				if(model.hasObject(Model.MESSAGE,x,y)){
+					update(x-1,y);
+					update(x+1,y);
+					update(x,y);
+				}
 	}
 	
 	@Override
@@ -68,7 +80,6 @@ public class View extends GridWorldView
 	}
 	
 	public void drawAgent(Graphics g, int x, int y, Color c, int id){
-		Font defaultFont = new Font("Arial", Font.BOLD, 15);
 		
 		String display = "";
 		

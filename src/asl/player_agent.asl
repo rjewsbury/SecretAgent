@@ -52,16 +52,23 @@ isAntiVirus :- role(R) & R = 2.
 		!play.
 
 +!play
-	: not isKernel & not isScheduler & voteComplete
+	: not isKernel & not isScheduler & voteComplete & not cardPlayed
+	<-	!waitForScheduler;
+		//make beliefs based on what card was played
+		!play.
+
+//wait for the round to end
++!play
+	: not isKernel & not isScheduler & voteComplete & cardPlayed
 	<-	wait;
 		!play.
-		
 		
 +!play
 	: isKernel & voteComplete & scheduler(S)
 		& not askedIdentity & virusPlayed(V) & V >= 3
 	<-	.broadcast(achieve, revealIdentity);
 		addMessage('R U HITLER');
+		.print("Asking identity");
 		+askedIdentity;
 		wait;
 		!play.
@@ -104,6 +111,10 @@ isAntiVirus :- role(R) & R = 2.
 		wait;
 		passKernel;
 		!play.
+
++!play
+	: true
+	<- .print("I DONT KNOW HOW TO PLAY").
 		
 -!play
 	:true
@@ -113,16 +124,16 @@ isAntiVirus :- role(R) & R = 2.
 	   
 +!revealIdentity
 	: isScheduler & isVirus
-	<-  addMessage('YE DOG');
+	<-  .print("Revealing Identity: VIRUS");
+		addMessage('YE DOG');
 		.broadcast(tell, virusElected);
 		wait.
 	
 +!revealIdentity
 	: isScheduler & not isVirus & player(X)
-	<-  addMessage('NO U');
-		.broadcast(tell, notVirus(X));
-		wait;
-		deleteMessage.
+	<-  .print("Revealing Identity: NOT VIRUS");
+		addMessage('NO U');
+		.broadcast(tell, notVirus(X)).
 	
 +!revealIdentity
 	: not isScheduler
@@ -133,6 +144,7 @@ isAntiVirus :- role(R) & R = 2.
 	: isKernel
 	<-  ?schedulerCandidate(X);
 		.print("Electing Player ",X);
+		addMessage('Electing ',X);
 		electScheduler(X);
 		.print("Successfully chose candidate").
 
@@ -150,15 +162,17 @@ isAntiVirus :- role(R) & R = 2.
 		
 +!submitVote(Y)
 	: Y = 0
-	<- voteNo.
+	<-	addMessage('NEIN!');
+		voteNo.
 	
 +!submitVote(Y)
 	: Y = 1
-	<- voteYes.
+	<-	addMessage('JA!');
+		voteYes.
 	
 +!vote
 	: true
-	<- .print("HOW DID I GET HERE?!?!?!").
+	<- .print("I DONT KNOW HOW TO VOTE").
 
 +!waitForVote
 	: not voteComplete
@@ -168,6 +182,7 @@ isAntiVirus :- role(R) & R = 2.
 +!waitForVote
 	: voteComplete
 	<-	//do something with the information about votes
+		deleteMessage;
 		.print("Done waiting for votes!").
 		
 +!waitForScheduler
