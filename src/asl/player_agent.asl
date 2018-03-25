@@ -131,8 +131,7 @@ isAntiVirus :- role(R) & R = 2.
 	<-  ?schedulerCandidate(X);
 		.print("Electing ",X);
 		electScheduler(X);
-		.print("Successfully chose candidate");
-		!play.
+		.print("Successfully chose candidate").
 
 //waits for the kernel to elect a scheduler
 +!vote
