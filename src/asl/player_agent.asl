@@ -205,7 +205,7 @@ isAntiVirus :- role(R) & R = 2.
 
 +!discardCard(X)
 	: X = 1
-	<-	discardAntivirus.
+	<-	discardAntiVirus.
 
 //only the scheduler can play cards, and there should be no decision to make
 +!playCard
