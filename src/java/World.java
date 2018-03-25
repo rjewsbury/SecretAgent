@@ -69,6 +69,8 @@ public class World extends TimeSteppedEnvironment {
 		boolean result = false;
 		int agentId = model.getNameIndex(agName);
 		
+		//System.out.println("-----"+agName+"-----"+action);
+		
 		if (action.equals(passKernel))
 			result = model.passKernel(agentId);
 		else if(action.getFunctor().equals(electScheduler.getFunctor()))
@@ -94,14 +96,18 @@ public class World extends TimeSteppedEnvironment {
 			result = model.voteNo(agentId);
 		else if(action.getFunctor().equals(addMessage.getFunctor()))
 		{
-			String msg = action.getTerm(0).toString();
+			String msg = "";
+			for(Term term: action.getTerms()){
+				msg += term.toString();
+			}
+			//System.out.println("-----------------------"+msg);
 			result = model.addMessage(agentId, msg);
 		}
 		else if (action.equals(deleteMessage))
 			result = model.deleteMessage(agentId);
-		else if (action.equals(wait))
+		else if (action.equals(wait)){
 			result = true;//do nothing
-		
+		}
 		else
 			logger.info("executing: "+action+", but not implemented!");
 		
@@ -109,9 +115,11 @@ public class World extends TimeSteppedEnvironment {
 		
 		if (result)
 		{
-			if(view != null)
+			if(view != null){
 				view.updateAgents();
-			try { Thread.sleep(100); } catch (InterruptedException x) { }
+				view.updateMessages();
+			}
+			try { Thread.sleep(50); } catch (InterruptedException x) { }
 			updatePercepts();
 		}
 		
