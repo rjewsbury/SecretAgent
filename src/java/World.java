@@ -209,6 +209,21 @@ public class World extends TimeSteppedEnvironment {
 			if(i != kernelID && i != exKernelID && i != exSchedulerID)
 				addPercept(Literal.parseLiteral("schedulerCandidate(" + i + ")"));
 		}
+		
+		
+		//Rogue and Virus know who all others are
+		for(int i = 0; i < model.getNumPlayers(); i++)
+		{
+			if(model.getRole(i) != model.ANTI_VIRUS_ROLE)
+				for(int j = 0; j < model.getNumPlayers(); j++)
+				{
+					if(model.getRole(j) == model.VIRUS_ROLE)
+						addPercept("player"+i, Literal.parseLiteral("isVirus("+j+")"));
+					else if(model.getRole(j) == model.ROGUE_ROLE)
+						addPercept("player"+i, Literal.parseLiteral("isRogue("+j+")"));
+					else
+						addPercept("player"+i, Literal.parseLiteral("isAntiVirus("+j+")"));
+				}
+		}
 	}
-	
 }
