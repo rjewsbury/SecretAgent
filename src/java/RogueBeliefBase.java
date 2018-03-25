@@ -4,27 +4,15 @@ import jason.bb.*;
 import java.util.*;
 import java.util.logging.Logger;
 
-public class RogueBeliefBase extends DefaultBeliefBase
-{
-	@Override
-	public Iterator<Literal> getCandidateBeliefs(Literal l, Unifier u)
-	{
-		if (l.getFunctor().equals("schedulerCandidate"))
-			return getSchedulerCandidate(l, u);
-		else if(l.getFunctor().equals("voteDecision"))
-			return getVoteDecision(l, u);
-		else	
-			return super.getCandidateBeliefs(l, u);
-	}
-	
-	
+public class RogueBeliefBase extends PlayerBeliefBase
+{	
 	public Iterator<Literal> getSchedulerCandidate(Literal l, Unifier u)
 	{
 		Iterator<Literal> i;
 		
 		try
 		{
-			i = super.getCandidateBeliefs(l ,u);		
+			i = getDefaultBeliefs(l ,u);		
 			ArrayList<Integer> candidates = new ArrayList<Integer>();
 			Literal candidate;
 			
@@ -45,7 +33,7 @@ public class RogueBeliefBase extends DefaultBeliefBase
 		}
 		catch(NullPointerException ex)
 		{
-			return super.getCandidateBeliefs(l, u);
+			return getDefaultBeliefs(l, u);
 		}
 	}
 	
@@ -80,76 +68,15 @@ public class RogueBeliefBase extends DefaultBeliefBase
 		}
 		catch(NullPointerException ex)
 		{
-			return super.getCandidateBeliefs(l, u);
+			return getDefaultBeliefs(l, u);
 		}
 	}
 	
-	//Get your belief on the rolea of the Kernel
-	private int getKernelID()
+	public Iterator<Literal> getDiscardDecision(Literal l, Unifier u)
 	{
-		Iterator<Literal> percepts = getPercepts();
-		while (percepts.hasNext())
-		{
-			Literal p = percepts.next();
-			//Get the Kernel ID
-			if (p.getFunctor().equals("kernel"))
-			{
-				Term[] terms = p.getTermsArray();
-				int kernelID = Integer.parseInt(terms[0].toString());
-				return kernelID;
-			}
-		}
-		return -1;
-	}
-	
-	//Get your belief on the role of the Scheduler
-	private int getSchedulerID()
-	{
-		Iterator<Literal> percepts = getPercepts();
-		while (percepts.hasNext())
-		{
-			Literal p = percepts.next();
-			//Get the Scheduler ID
-			if (p.getFunctor().equals("scheduler"))
-			{
-				Term[] terms = p.getTermsArray();
-				int schedulerID = Integer.parseInt(terms[0].toString());
-				return schedulerID;
-			}
-		}
-		return -1;
-	}
-	
-	private Literal getRoleBelief(int ag)
-	{
-		Iterator<Literal> percepts = getPercepts();
-		while (percepts.hasNext())
-		{
-			Literal p = percepts.next();
-			int agentID = 0;
-			//If believes agent is Virus
-			if (p.getFunctor().equals("isVirus"))
-			{
-				Term[] terms = p.getTermsArray();
-				agentID = Integer.parseInt(terms[0].toString());
-			}
-			//If believes agent is Rogue
-			else if (p.getFunctor().equals("isRogue"))
-			{
-				Term[] terms = p.getTermsArray();
-				agentID = Integer.parseInt(terms[0].toString());
-			}
-			else if(p.getFunctor().equals("isAntiVirus"))
-			{
-				Term[] terms = p.getTermsArray();
-				agentID = Integer.parseInt(terms[0].toString());
-			}
-			
-			if(ag == agentID)
-			{
-				return p;
-			}
-		}
-		return null;
+		Literal voteDecision = Literal.parseLiteral("discardDecision(1)");
+		List<Literal> result = new ArrayList<Literal>();
+		result.add(voteDecision);
+		return result.iterator();
 	}
 }
