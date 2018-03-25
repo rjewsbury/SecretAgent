@@ -140,15 +140,19 @@ isAntiVirus :- role(R) & R = 2.
 	<-	wait;
 		!vote.
 
+//Decides how to vote based on beliefs about S and K
 +!vote
-	: electedScheduler(S) & player(ID) & S = ID
-	<-	.print("Voting yes");
-		voteYes.
-
-+!vote
-	: electedScheduler(S) & player(ID) & not ( S = ID )
-	<-	.print("Voting yes");
-		voteYes.
+	: electedScheduler(S)
+	<-	?voteDecision(X);
+		!submitVote(X).
+		
++!submitVote(Y)
+	: Y = 0
+	<- voteNo.
+	
++!submitVote(Y)
+	: Y = 1
+	<- voteYes.
 	
 +!vote
 	: true
