@@ -165,8 +165,13 @@ public class World extends TimeSteppedEnvironment {
 				addPercept(Literal.parseLiteral("vote(" + i + ", " + model.getVote(i) + ")"));
 		}
 		
-		if(model.getCardPlayed())
+		if(model.getCardPlayed() > 0){
 			addPercept(Literal.parseLiteral("cardPlayed"));
+			if(model.getCardPlayed() == Model.VIRUS_CARD)
+				addPercept(Literal.parseLiteral("virusPlayed"));
+			else if(model.getCardPlayed() == Model.ANTI_VIRUS_CARD)
+				addPercept(Literal.parseLiteral("antiVirusPlayed"));
+		}
 		
 		//tell all players who the kernel is
 		int kernelID = model.getKernel();
