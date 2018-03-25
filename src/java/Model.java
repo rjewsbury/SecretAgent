@@ -52,6 +52,7 @@ public class Model extends GridWorldModel
 	private List<Integer>[] hand;
 	
 	private int[] role;
+	private String[] name;
 	private int[] board;
 	private int[] votes;
 	private String[] messages;
@@ -159,6 +160,31 @@ public class Model extends GridWorldModel
 		//also this comment took more lines than a normal solution
 		//but this line looks cool so it's all good.
 		role = tempRole.stream().mapToInt(i->i).toArray();
+		
+		//unfortunately, we could not find a way to create agents at startup.
+		//the function shown in the JASON docs did not work, despite all efforts.
+		//so, in order to have shuffled agent positions, we have to know the
+		//names of each agent in each position. this is done through constants
+		// :(
+		//one-indexing names, because one-indexing is more intuitive for people
+		int rogueCount = 1;
+		int antivirusCount = 1;
+		name = new String[role.length];
+		for(int i = 0; i<name.length; i++){
+			switch(role[i]){
+				case VIRUS_ROLE:
+					name[i] = "virus";
+					break;
+				case ROGUE_ROLE:
+					name[i] = "rogue"+rogueCount;
+					rogueCount++;
+					break;
+				case ANTI_VIRUS_ROLE:
+					name[i] = "antivirus"+antivirusCount;
+					antivirusCount++;
+					break;
+			}
+		}
 	}
 		
 	private void initDecks()
@@ -241,6 +267,15 @@ public class Model extends GridWorldModel
 	public List<Integer> getHand(int ag){ return hand[ag]; }
 	
 	public int getRole(int ag){ return role[ag]; }
+	
+	public String getName(int ag){ return name[ag]; }
+	
+	public int getNameIndex(String agName){
+		for(int i = 0; i < num_players; i++)
+			if(name[i].equals(agName))
+				return i;
+		return -1;
+	}
 	
 	public int getBoardPower(int numVirus){
 		return numVirus == 0 ? NO_ABILITY : board[numVirus - 1];

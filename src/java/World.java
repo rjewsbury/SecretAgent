@@ -25,7 +25,11 @@ public class World extends TimeSteppedEnvironment {
 	private static final Literal addMessage = Literal.parseLiteral("addMessage");
 	private static final Literal deleteMessage = Literal.parseLiteral("deleteMessage");
 	
-	private boolean use_gui;
+	//currently, the simulation is only designed for 6 players.
+	//however the model itself can handle 5-10, for future development
+	private static final int NUM_PLAYERS = 6;
+	
+	private boolean useGui;
 	Model model;
 	View view;
 
@@ -35,24 +39,16 @@ public class World extends TimeSteppedEnvironment {
 	public void init(String[] args) {
 		super.init(args);
 		
-		use_gui = false;
+		useGui = false;
 		//first optional argument is the use of a gui
 		if (args.length > 0){
-			use_gui = args[0].equals("gui");
+			useGui = args[0].equals("gui");
 		}
 		
-		//ask the user to initialize the number of agents
-		Object[] options = {5,6,7,8,9,10};
-		int option_index = JOptionPane.showOptionDialog(null,
-			"Choose how many agents should play.", "Number of Players",
-			JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
-			null, options, options[1]);
-		int num_players = (Integer)options[option_index];
-		
 		//create the model
-		model = new Model(num_players);
+		model = new Model(NUM_PLAYERS);
 		
-		if (use_gui)
+		if (useGui)
 		{
 			view = new View(model);
 			model.setView(view);
@@ -64,43 +60,15 @@ public class World extends TimeSteppedEnvironment {
 			for(int y = 0; y < model.GRID_HEIGHT; y++)
 				view.update(x, y);
 		
-		addAgents();
 		updatePercepts();
-	}
-	
-	private void addAgents() {
-		int num_players = model.getNumPlayers();
-		String agentClass;
-		String bbClass;
-		ClassParameters bbParams;
-		for(int i = 0; i < num_players; i++)
-		{
-			if(model.getRole(i) == model.VIRUS_ROLE){
-			}
-			agentClass = "player_agent.asl";
-			bbClass = "AntiVirusBeliefBase";
-			bbParams = new ClassParameters(bbClass);
-			try {
-				getEnvironmentInfraTier().getRuntimeServices().
-					createAgent(
-						"player_"+i,	// agent name
-						agentClass,		// AgentSpeak source
-						null,			// default agent class
-						null,			// default architecture class
-						bbParams,		// default belief base parameters
-						null,			// default settings
-						null);			
-			}catch(Exception e){
-				System.out.println("Failed to make agent #"+i);
-			}
-		}
 	}
 
 	@Override
 	public boolean executeAction(String agName, Structure action) {
 		
 		boolean result = false;
-		int agentId = Integer.parseInt(agName.substring(agName.length() - 1));
+		int agentId = model.getNameIndex(agName);
+		
 		if (action.equals(passKernel))
 			result = model.passKernel(agentId);
 		else if(action.getFunctor().equals(electScheduler.getFunctor()))
@@ -137,7 +105,7 @@ public class World extends TimeSteppedEnvironment {
 		else
 			logger.info("executing: "+action+", but not implemented!");
 		
-		//logger.info("player "+agentId+" did something!");
+		//logger.info(model.getName(i)+" did something!");
 		
 		if (result)
 		{
@@ -198,8 +166,8 @@ public class World extends TimeSteppedEnvironment {
 			addPercept(Literal.parseLiteral("kernel(" + kernelID + ")"));
 			//tell the kernel about the contents of their hand
 			if(model.getHandSize(kernelID) > 0){
-				addPercept("player"+kernelID, Literal.parseLiteral("heldVirus(" + model.getHeldVirus(kernelID) + ")"));
-				addPercept("player"+kernelID, Literal.parseLiteral("heldAntiVirus(" + model.getHeldAntiVirus(kernelID) + ")"));
+				addPercept(model.getName(kernelID), Literal.parseLiteral("heldVirus(" + model.getHeldVirus(kernelID) + ")"));
+				addPercept(model.getName(kernelID), Literal.parseLiteral("heldAntiVirus(" + model.getHeldAntiVirus(kernelID) + ")"));
 			}
 		}
 		//tell all players who the ex kernel is
@@ -212,8 +180,8 @@ public class World extends TimeSteppedEnvironment {
 		if(schedulerID != -1){
 			addPercept(Literal.parseLiteral("scheduler(" + schedulerID + ")"));
 			if(model.getHandSize(schedulerID) > 0){
-				addPercept("player"+schedulerID, Literal.parseLiteral("heldVirus(" + model.getHeldVirus(schedulerID) + ")"));
-				addPercept("player"+schedulerID, Literal.parseLiteral("heldAntiVirus(" + model.getHeldAntiVirus(schedulerID) + ")"));
+				addPercept(model.getName(schedulerID), Literal.parseLiteral("heldVirus(" + model.getHeldVirus(schedulerID) + ")"));
+				addPercept(model.getName(schedulerID), Literal.parseLiteral("heldAntiVirus(" + model.getHeldAntiVirus(schedulerID) + ")"));
 			}
 		}
 		
@@ -229,11 +197,11 @@ public class World extends TimeSteppedEnvironment {
 		
 		//tell each player what their role is
 		for(int i = 0; i < model.getNumPlayers(); i++)
-			addPercept("player"+i, Literal.parseLiteral("role("+model.getRole(i)+")"));
+			addPercept(model.getName(i), Literal.parseLiteral("role("+model.getRole(i)+")"));
 		
 		//tell each player what their number is
 		for(int i = 0; i < model.getNumPlayers(); i++)
-			addPercept("player"+i, Literal.parseLiteral("player("+i+")"));
+			addPercept(model.getName(i), Literal.parseLiteral("player("+i+")"));
 		
 		//tell players which players are eligible to be elected
 		for(int i = 0; i < model.getNumPlayers(); i++)
@@ -258,5 +226,4 @@ public class World extends TimeSteppedEnvironment {
 				}
 		}
 	}
-	
 }
