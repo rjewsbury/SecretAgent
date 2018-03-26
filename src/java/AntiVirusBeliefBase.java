@@ -133,9 +133,6 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 			int agentID = Integer.parseInt(candidate_terms[0].toString());
 			candidates.add(agentID);
 		}
-		Random r = new Random();
-		int pick = r.nextInt(candidates.size()); 
-		
 		Iterator<Literal> notVirus = getDefaultBeliefs(Literal.parseLiteral("notVirus(X)"), null);
 		ArrayList<Integer> notVirusAgents = new ArrayList<Integer>();
 		
@@ -147,8 +144,19 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 			notVirusAgents.add(agentID);
 		}
 		
-		//int pick = r.nextInt(candidates.size());
+		//AntiVirus agents should not try to kill agents who are confirmed notVirus
+		for(Integer ID1 : notVirusAgents)
+		{
+			for(Integer ID2 : candidates)
+			{
+				if(ID1 == ID2)
+					candidates.remove(Integer.valueOf(ID1));
+			}
+		}
 		
+		//Randomly pick an agent to kill
+		Random r = new Random();
+		int pick = r.nextInt(candidates.size());
 		int agentID = candidates.get(pick);
 		candidate = Literal.parseLiteral("deleteDecision(" + agentID +")");
 		List<Literal> result = new ArrayList<Literal>();

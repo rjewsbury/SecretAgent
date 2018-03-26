@@ -139,17 +139,17 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		int ownID = getID();
 		int kernelID = getKernelID();
 		int schedulerID = getSchedulerID();
-		Literal voteDecision = Literal.parseLiteral("discardDecision(virus)");
+		Literal discardDecision = Literal.parseLiteral("discardDecision(virus)");
 		
 		if(ownID == kernelID && getHeldVirus() == 2)
-			voteDecision = Literal.parseLiteral("discardDecision(antivirus)");
+			discardDecision = Literal.parseLiteral("discardDecision(antivirus)");
 		else if(ownID == kernelID && getHeldVirus() == 1)
-			voteDecision = Literal.parseLiteral("discardDecision(virus)");
+			discardDecision = Literal.parseLiteral("discardDecision(virus)");
 		else if(ownID == schedulerID && (getAntiVirusPlayed() > 2 || getVirusPlayed() > 2) && getHeldVirus() == 1)
-			voteDecision = Literal.parseLiteral("discardDecision(antivirus)");
+			discardDecision = Literal.parseLiteral("discardDecision(antivirus)");
 		
 		List<Literal> result = new ArrayList<Literal>();
-		result.add(voteDecision);
+		result.add(discardDecision);
 		return result.iterator();
 	}
 	

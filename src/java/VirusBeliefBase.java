@@ -116,10 +116,18 @@ public class VirusBeliefBase extends PlayerBeliefBase
 	{
 		int virusPlayed = getVirusPlayed();
 		int antiVirusPlayed = getAntiVirusPlayed();
+		int ownID = getID();
+		int kernelID = getKernelID();
+		int schedulerID = getSchedulerID();
 		Literal discardDecision = Literal.parseLiteral("discardDecision(virus)");
-		if(virusPlayed > 3)	
+		
+		if(ownID == kernelID && getHeldVirus() == 2)
 			discardDecision = Literal.parseLiteral("discardDecision(antivirus)");
-		else if(antiVirusPlayed > 2)
+		else if(ownID == kernelID && getHeldVirus() == 1 && (getAntiVirusPlayed() > 2 || getVirusPlayed() > 3))
+			discardDecision = Literal.parseLiteral("discardDecision(antivirus)");
+		else if(ownID == kernelID && getHeldVirus() == 1 && (getAntiVirusPlayed() < 3 || getVirusPlayed() < 4) )
+			discardDecision = Literal.parseLiteral("discardDecision(virus)");
+		else if(ownID == schedulerID && (getAntiVirusPlayed() > 2 || getVirusPlayed() > 3) && getHeldAntiVirus() >= 1)
 			discardDecision = Literal.parseLiteral("discardDecision(antivirus)");
 		
 		List<Literal> result = new ArrayList<Literal>();
@@ -156,6 +164,20 @@ public class VirusBeliefBase extends PlayerBeliefBase
 		int heldVirus = getHeldVirus();
 		int heldAntiVirus = getHeldAntiVirus();
 		Literal handDecision = Literal.parseLiteral("handBroadcastDecision("+heldAntiVirus+","+heldVirus+")");
+		
+		if(getID() == getKernelID() && heldVirus == 2)
+			handDecision = Literal.parseLiteral(
+				"handBroadcastDecision("+(heldAntiVirus - 1)+","+(heldVirus + 1)+")");
+		else if(getID() == getKernelID() && getHeldVirus() == 1 && (getAntiVirusPlayed() > 2 || getVirusPlayed() > 3))
+			handDecision = Literal.parseLiteral(
+				"handBroadcastDecision("+(heldAntiVirus - 1)+","+(heldVirus + 1)+")");
+		else if(getID() == getSchedulerID() && (getAntiVirusPlayed() > 2 || getVirusPlayed() > 3) && heldVirus == 1)
+			handDecision = Literal.parseLiteral(
+				"handBroadcastDecision("+(heldAntiVirus - 1)+","+(heldVirus + 1)+")");
+		else
+			handDecision = Literal.parseLiteral(
+				"handBroadcastDecision("+heldAntiVirus+","+heldVirus+")");
+				
 		List<Literal> result = new ArrayList<Literal>();
 		result.add(handDecision);
 		return result.iterator();
