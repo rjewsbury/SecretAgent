@@ -6,6 +6,23 @@ import java.util.logging.Logger;
 
 public class RogueBeliefBase extends PlayerBeliefBase
 {	
+	//ROGUE SPECIFIC HELPER FUNCTIONS ---------------------------------
+	
+	public int getVirusID()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("isVirus(X)"), null);
+		while (percepts.hasNext())
+		{
+			Literal p = percepts.next();
+			//Get the Virus ID
+			Term[] terms = p.getTermsArray();
+			int virusID = Integer.parseInt(terms[0].toString());
+			return virusID;
+		}
+		return -1;
+	}
+	
+	//DECISIONS -------------------------------------------------------
 	public Iterator<Literal> getSchedulerCandidate(Literal l, Unifier u)
 	{
 		Iterator<Literal> i;
@@ -144,20 +161,6 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		result.add(candidate);
 		return result.iterator();
 	}
-
-	public int getVirusID()
-	{
-		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("isVirus(X)"), null);
-		while (percepts.hasNext())
-		{
-			Literal p = percepts.next();
-			//Get the Virus ID
-			Term[] terms = p.getTermsArray();
-			int virusID = Integer.parseInt(terms[0].toString());
-			return virusID;
-		}
-		return -1;
-	}
 	
 	public Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u)
 	{
@@ -168,4 +171,40 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		result.add(handDecision);
 		return result.iterator();
 	}
+	
+	public Iterator<Literal> getInterpretVote(Literal l, Unifier u)
+	{
+		int ag = Integer.parseInt(u.get(l.getTermsArray()[0].toString()).toString());
+		int myVote = getVote(getID());
+		int agVote = getVote(ag);
+		int val = getTrust(ag);
+		
+		if(myVote == agVote)
+			val += 1;
+		else
+			val -= 2;
+		Literal interpretVote = Literal.parseLiteral("interpretVote("+ag+","+val+")");
+		List<Literal> result = new ArrayList<Literal>();
+		result.add(interpretVote);
+		return result.iterator();
+	}
+	
+	public Iterator<Literal> getInterpretCard(Literal l, Unifier u)
+	{
+		int ag = Integer.parseInt(u.get(l.getTermsArray()[0].toString()).toString());
+		boolean playedAntiVirus = wasAntiVirusPlayed();
+		int val = getTrust(ag);
+		
+		
+		if(playedAntiVirus)
+			val += 10;
+		else
+			val -= 12;
+		
+		Literal interpretVote = Literal.parseLiteral("interpretCard("+ag+","+val+")");
+		List<Literal> result = new ArrayList<Literal>();
+		result.add(interpretVote);
+		return result.iterator();
+	}
+	
 }
