@@ -63,49 +63,45 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		int numVirusPlayed = getVirusPlayed();
 		int NO_VOTE = 0;
 		int YES_VOTE = 1;
-		int vote = YES_VOTE;
+		int vote = -1;
 		
 		Iterator<Literal> notVirus = getDefaultBeliefs(Literal.parseLiteral("notVirus(X)"), null);
 		ArrayList<Integer> notVirusAgents = getNotVirusAgents();
 		Literal candidate;
 		//X is id, Y is amount
 		
-			//If the elected scheduler is not the virus
+		//If the elected scheduler is not the virus
 		try{
-			if(notVirusAgents.size() > 0)
+			//if the person being elected is confirmed not virus,
+			//elect them
+			for(Integer ID: notVirusAgents)
 			{
-				for(Integer ID: notVirusAgents)
+				if(ID == electedSchedulerID)
 				{
-					if(ID == electedSchedulerID)
-					{
-						vote = YES_VOTE;
-						break;
-					}
-					else if(ID != electedSchedulerID)
-					{
-						Iterator<Literal> trust = getDefaultBeliefs(Literal.parseLiteral("trust(X, Y)"), null);
-						while(trust.hasNext())
-						{
-							Term[] trust_terms = trust.next().getTermsArray();
-							int agentID = Integer.parseInt(trust_terms[0].toString());
-							int trustAmount = Integer.parseInt(trust_terms[1].toString());
-							if(agentID == electedSchedulerID && trustAmount > 20 && numVirusPlayed >= 3)
-							{
-								vote = YES_VOTE;
-								break;
-							}
-							else if(agentID == electedSchedulerID && trustAmount > -1 && numVirusPlayed < 3)
-							{
-								vote = YES_VOTE;
-								break;
-							}
-							else if(agentID == electedSchedulerID && trustAmount < 0)
-								vote = NO_VOTE;
-						}
-					}
+					vote = YES_VOTE;
+					break;
 				}
 			}
-		}catch(NullPointerException e){}
+			//if we didnt find them in there, we have to base the decision on trust
+			if(vote < 0)
+			{
+				int trustAmount = getTrust(electedSchedulerID);
+				if(trustAmount > 5 && numVirusPlayed >= 3)
+				{
+					vote = YES_VOTE;
+				}
+				else if(numVirusPlayed < 3)
+				{
+					vote = YES_VOTE;
+				}
+				else
+				{
+					vote = NO_VOTE;
+				}
+			}
+		}catch(NullPointerException e){
+			e.printStackTrace();
+		}
 		
 		//Take the final vote 
 		Literal voteDecision = Literal.parseLiteral("voteDecision("+ vote +")");
@@ -114,33 +110,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		return result.iterator();
 	}
 	
-	public Iterator<Literal> getTrustDecision(Literal l, Unifier u)
-	{
-		int agentID = Integer.parseInt(l.getTermsArray()[0].toString());
-		int trust = getTrust(agentID);
-		
-		int kernelID = getKernelID();
-		int schedulerID = getSchedulerID();
-		
-		
-		/*//If Kernel
-		if(agentID == kernelID)
-		{
-			
-		}
-		
-		//If Scheduler
-		if(agentID == schedulerID)
-		{
-				
-		}*/
-		
-		List<Literal> result = new ArrayList<Literal>();
-		Literal trustDecision = Literal.parseLiteral("trustDecision("+ agentID +","+ trust +")");
-		result.add(trustDecision);
-		return result.iterator();
-	}
-	
+	//Get the decision of which card to discard
 	public Iterator<Literal> getDiscardDecision(Literal l, Unifier u)
 	{
 		Literal voteDecision = Literal.parseLiteral("discardDecision(virus)");
@@ -149,6 +119,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		return result.iterator();
 	}
 	
+	//Get the decision about which agent to kill
 	public Iterator<Literal> getDeleteDecision(Literal l, Unifier u)
 	{		
 		Iterator<Literal> i = getDefaultBeliefs(Literal.parseLiteral("deleteCandidate(X)"), null);
@@ -163,7 +134,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 			candidates.add(agentID);
 		}
 		Random r = new Random();
-		int pick = r.nextInt(candidates.size() - 1); 
+		int pick = r.nextInt(candidates.size()); 
 		
 		Iterator<Literal> notVirus = getDefaultBeliefs(Literal.parseLiteral("notVirus(X)"), null);
 		ArrayList<Integer> notVirusAgents = new ArrayList<Integer>();
@@ -185,6 +156,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		return result.iterator();
 	}
 	
+	//Get the decision about which agent to kill
 	public Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u)
 	{
 		int heldVirus = getHeldVirus();
@@ -195,6 +167,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		return result.iterator();
 	}
 	
+	//Interprets the votes of other players based on your vote
 	public Iterator<Literal> getInterpretVote(Literal l, Unifier u)
 	{
 		int ag = Integer.parseInt(u.get(l.getTermsArray()[0].toString()).toString());
@@ -212,6 +185,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		return result.iterator();
 	}
 	
+	//Interprets the card that was played by the scheduler and adjusts trust
 	public Iterator<Literal> getInterpretCard(Literal l, Unifier u)
 	{
 		int ag = Integer.parseInt(u.get(l.getTermsArray()[0].toString()).toString());
@@ -220,9 +194,9 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		
 		
 		if(playedAntiVirus)
-			val += 10;
+			val += 9;
 		else
-			val -= 12;
+			val -= 3;
 		
 		Literal interpretVote = Literal.parseLiteral("interpretCard("+ag+","+val+")");
 		List<Literal> result = new ArrayList<Literal>();

@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 public class RogueBeliefBase extends PlayerBeliefBase
 {	
 	//ROGUE SPECIFIC HELPER FUNCTIONS ---------------------------------
-	
+	//Gets your belief about who the virus is
 	public int getVirusID()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("isVirus(X)"), null);
@@ -23,6 +23,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 	}
 	
 	//DECISIONS -------------------------------------------------------
+	//Get the scheduler candidate that you believe should be elected
 	public Iterator<Literal> getSchedulerCandidate(Literal l, Unifier u)
 	{
 		Iterator<Literal> i;
@@ -42,6 +43,10 @@ public class RogueBeliefBase extends PlayerBeliefBase
 			Random r = new Random();
 			int pick = r.nextInt(candidates.size()); 
 			int agentID = candidates.get(pick);
+			
+			if(candidates.contains(getVirusID()) && getVirusPlayed() >= 3)
+				agentID = getVirusID();
+			
 			candidate = Literal.parseLiteral("schedulerCandidate(" + agentID +")");
 			List<Literal> result = new ArrayList<Literal>();
 			result.add(candidate);
@@ -56,6 +61,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 	//Get the vote decision based on beliefs about the Kernel and Scheduler
 	public Iterator<Literal> getVoteDecision(Literal l, Unifier u)
 	{
+		getVirusID();
 		Iterator<Literal> i;
 		int kernelID = getKernelID();
 		int electedSchedulerID = getElectedSchedulerID();
@@ -127,6 +133,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		}
 	}
 	
+	//Get the decision of which card to discard
 	public Iterator<Literal> getDiscardDecision(Literal l, Unifier u)
 	{	
 		int ownID = getID();
@@ -138,7 +145,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 			voteDecision = Literal.parseLiteral("discardDecision(antivirus)");
 		else if(ownID == kernelID && getHeldVirus() == 1)
 			voteDecision = Literal.parseLiteral("discardDecision(virus)");
-		else if(ownID == schedulerID && (getAntiVirusPlayed() > 3 || getVirusPlayed() > 4) && getHeldVirus() == 1)
+		else if(ownID == schedulerID && (getAntiVirusPlayed() > 2 || getVirusPlayed() > 2) && getHeldVirus() == 1)
 			voteDecision = Literal.parseLiteral("discardDecision(antivirus)");
 		
 		List<Literal> result = new ArrayList<Literal>();
@@ -146,11 +153,13 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		return result.iterator();
 	}
 	
+	//Get the decision about which agent to kill
 	public Iterator<Literal> getDeleteDecision(Literal l, Unifier u)
 	{		
 		Iterator<Literal> i = getDefaultBeliefs(Literal.parseLiteral("deleteCandidate(X)"), null);
 		ArrayList<Integer> candidates = new ArrayList<Integer>();
 		Literal candidate;
+		int schedulerID = getSchedulerID();
 		
 		while(i.hasNext())
 		{
@@ -159,18 +168,24 @@ public class RogueBeliefBase extends PlayerBeliefBase
 			int agentID = Integer.parseInt(candidate_terms[0].toString());
 			candidates.add(agentID);
 		}
+		
+		candidates.remove(Integer.valueOf(getVirusID()));
+		
 		Random r = new Random();
-		int pick = r.nextInt(candidates.size() - 1); 
-		while(pick == getVirusID())
-			pick = r.nextInt(candidates.size() - 1); 
-			
-		int agentID = candidates.get(pick);
+		int pick = r.nextInt(candidates.size());
+		int agentID = schedulerID;
+		if(schedulerID != getVirusID())
+			agentID = schedulerID;
+		else
+			agentID = candidates.get(pick);
+		
 		candidate = Literal.parseLiteral("deleteDecision(" + agentID +")");
 		List<Literal> result = new ArrayList<Literal>();
 		result.add(candidate);
 		return result.iterator();
 	}
 	
+	//Get the hand broadcast decision based on beliefs about what cards you had
 	public Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u)
 	{
 		int heldVirus = getHeldVirus();
@@ -181,7 +196,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 			handDecision = Literal.parseLiteral(
 				"handBroadcastDecision("+(heldAntiVirus - 1)+","+(heldVirus + 1)+")");
 		else if(getID() == getSchedulerID() && 
-			(getAntiVirusPlayed() > 3 || getVirusPlayed() > 4) && heldVirus == 1)
+			(getAntiVirusPlayed() > 2 || getVirusPlayed() > 2) && heldVirus == 1)
 			handDecision = Literal.parseLiteral(
 				"handBroadcastDecision("+(heldAntiVirus - 1)+","+(heldVirus + 1)+")");
 		else
@@ -193,6 +208,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		return result.iterator();
 	}
 	
+	//Interprets the votes of other players based on your vote
 	public Iterator<Literal> getInterpretVote(Literal l, Unifier u)
 	{
 		int ag = Integer.parseInt(u.get(l.getTermsArray()[0].toString()).toString());
@@ -210,6 +226,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		return result.iterator();
 	}
 	
+	//Interprets the card that was played by the scheduler and adjusts trust
 	public Iterator<Literal> getInterpretCard(Literal l, Unifier u)
 	{
 		int ag = Integer.parseInt(u.get(l.getTermsArray()[0].toString()).toString());
@@ -218,9 +235,9 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		
 		
 		if(playedAntiVirus)
-			val += 10;
+			val += 9;
 		else
-			val -= 12;
+			val -= 3;
 		
 		Literal interpretVote = Literal.parseLiteral("interpretCard("+ag+","+val+")");
 		List<Literal> result = new ArrayList<Literal>();

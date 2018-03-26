@@ -123,10 +123,6 @@ public class World extends TimeSteppedEnvironment implements ChangeListener {
 		}
 		else
 			logger.info("executing: "+action+", but not implemented!");
-		
-		//logger.info(model.getName(i)+" did something!");
-		//if(!action.equals(wait))
-		//	System.out.println("-----"+agName+"-----"+action+"------"+result);
 
 		if (result)
 		{

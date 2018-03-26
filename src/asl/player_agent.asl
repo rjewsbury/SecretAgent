@@ -18,19 +18,9 @@ isDead :- player(X) & dead(Y) & X = Y.
 
 //states their roles to the terminal before playing
 +!identity
-	: isAntiVirus
-	<- .print("I am an AntiVirus");
-	   !play.
-
-+!identity
-	: isRogue
-	<- .print("I am a Rogue");
-	   !play.
-
-+!identity
-	: isVirus
-	<- .print("I am a Virus");
-	   !play.
+	: player(X)
+	<-	.print("I am player ",X);
+		!play.
 	   
 +!waitForever
 	:true
@@ -91,9 +81,9 @@ isDead :- player(X) & dead(Y) & X = Y.
 		
 +!askIdentity(S)
 	: true
-	<-	.broadcast(achieve, revealIdentity(S));
+	<-	.print("Asking identity");
+		.broadcast(achieve, revealIdentity(S));
 		addMessage('ARE YOU A VIRUS?');
-		.print("Asking identity");
 		+askedIdentity;
 		!waitForResponse(S).
 		
@@ -107,13 +97,9 @@ isDead :- player(X) & dead(Y) & X = Y.
 		-askedIdentity;
 		deleteMessage;
 		drawThree;
-		.print("Discarding a card");
 		!discardCard;
-		.print("Passing cards");
 		passCards;
-		.print("Waiting for scheduler");
 		!waitForScheduler;
-		.print("Using ability");
 		!useAbility;
 		.print("Passing kernel");
 		passKernel;
@@ -152,14 +138,14 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!revealIdentity(X)
 	: player(P) & P=X & isVirus
 	<-  .print("Revealing Identity: VIRUS");
-		addMessage('YEAAAA BOIIIIIIIIIII');
+		addMessage('YEAAAA BOIIIIIIIIII');
 		.broadcast(tell, virusRevealed(P));
 		wait.
 	
 +!revealIdentity(X)
 	: player(P) & P=X & not isVirus
 	<-  .print("Revealing Identity: NOT VIRUS");
-		addMessage('Im not I swear!');
+		addMessage('Im not the Virus!');
 		.broadcast(tell, notVirus(P)).
 	
 +!revealIdentity(X)
@@ -167,7 +153,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 	<- wait.
 	
 +!waitForResponse(S)
-	: notVirus(S) | virusElected
+	: notVirus(S) | virusRevealed(V)
 	<- wait.
 	
 +!waitForResponse(S)
@@ -248,8 +234,8 @@ isDead :- player(X) & dead(Y) & X = Y.
 //if this player voted the same thing as another player, trust them a bit more
 +!interpretVotes
 	: vote(P, Y) & trust(P, T) & not interpretedVote(P)
-	<-	-trust(P, T);
-		?interpretVote(P, D);
+	<-	?interpretVote(P, D);
+		-trust(P, T);
 		+trust(P, D);
 		+interpretedVote(P);
 		!interpretVotes.
@@ -293,7 +279,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 
 +!discardCard
 	: discard(D) & D = 'antivirus'
-	<-	.print("discarding a antivirus");
+	<-	.print("discarding an antivirus");
 		!broadcastHand;
 		-discard(D);
 		discardAntiVirus.	
@@ -360,15 +346,13 @@ isDead :- player(X) & dead(Y) & X = Y.
 	: player(ID) & kernel(K) & K=ID & V=0
 	<-	addMessage('You wont believe this');
 		wait;	//build anticipation
-		wait;	//build MORE anticipation
-		addMessage('I got ', A, ' Liberal!').
+		addMessage('I got ', A, ' Anti!').
 		
 +!addHandMessage(A, V)
 	: player(ID) & kernel(K) & K=ID & A=0
 	<-	addMessage('You wont believe this');
 		wait;	//build anticipation
-		wait;	//build MORE anticipation
-		addMessage('I got ', V, ' Fascist!').
+		addMessage('I got ', V, ' Virus!').
 		
 +!addHandMessage(A, V)
 	: player(ID) & kernel(K) & K=ID & A > 0 & V > 0

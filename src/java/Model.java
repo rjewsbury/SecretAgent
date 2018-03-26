@@ -261,16 +261,19 @@ public class Model extends GridWorldModel
 			requireViewUpdate = true;
 			voteComplete = true;
 			
-			numVotesFailed = 0;
 			if(numYes > numNo){
 				schedulerID = electedSchedulerID;
+				numVotesFailed = 0;
 			}
 			else{
+				System.out.println("NUM VOTES FAILED = "+numVotesFailed);
 				numVotesFailed++;//do we need extra logic if the vote fails?
-				if(numVotesFailed == 3){
+				if(numVotesFailed >= 3)
+				{
 					if(deck.isEmpty())
 						shuffleDiscard();
-					if(deck.remove(0) == VIRUS_CARD){
+					if(deck.remove(0) == VIRUS_CARD)
+					{
 						numVirusPlayed++;
 						board[numVirusPlayed-1] = NO_ABILITY;
 					}

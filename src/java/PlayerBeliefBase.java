@@ -45,18 +45,24 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 	//Get the vote decision based on beliefs about the Kernel and Scheduler
 	public abstract Iterator<Literal> getVoteDecision(Literal l, Unifier u);
 	
+	//Get the discard decision based on beliefs about your role
 	public abstract Iterator<Literal> getDiscardDecision(Literal l, Unifier u);
 	
+	//Get the delete decision based on beliefs about your role
 	public abstract Iterator<Literal> getDeleteDecision(Literal l, Unifier u);
 	
+	//Get the hand broadcast decision based on beliefs about what cards you had
 	public abstract Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u);
 	
+	//Interprets the votes of other players based on your vote
 	public abstract Iterator<Literal> getInterpretVote(Literal l, Unifier u);
 	
+	//Interprets the card that was played by the scheduler
 	public abstract Iterator<Literal> getInterpretCard(Literal l, Unifier u);
 	
 	//HELPER FUNCTIONS --------------------------------------------------------
 	
+	//Gets the number of virus cards currently played
 	public int getVirusPlayed()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("virusPlayed(X)"), null);
@@ -71,6 +77,7 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return numVirusPlayed;
 	}
 	
+	//Gets the number of antivirus cards currently played
 	public int getAntiVirusPlayed()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("antiVirusPlayed(X)"), null);
@@ -85,18 +92,21 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return numAntiVirusPlayed;
 	}
 	
+	//Returns true if a virus card was played by the scheduler
 	public boolean wasVirusPlayed()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("virusPlayed"), null);
 		return (percepts != null);
 	}
 	
+	//Returns true if an antivirus card was played by the scheduler
 	public boolean wasAntiVirusPlayed()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("antiVirusPlayed"), null);
 		return (percepts != null);
 	}
 	
+	//Returns the vote (yes/no) of a specific agent
 	public int getVote(int ag)
 	{
 		Iterator<Literal> vote = getDefaultBeliefs(Literal.parseLiteral("vote(X, Y)"), null);
@@ -115,26 +125,30 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return voteVal;
 	}
 	
+	//Get the current trust of a specific agent
 	public int getTrust(int ag)
 	{
 		Iterator<Literal> trust = getDefaultBeliefs(Literal.parseLiteral("trust(X, Y)"), null);
 		int trustAmount = 0;
 		
-		while(trust.hasNext())
+		if(trust != null)
 		{
-			Term[] trust_terms = trust.next().getTermsArray();
-			int agentID = Integer.parseInt(trust_terms[0].toString());
-			int amount = Integer.parseInt(trust_terms[1].toString());
-			if(ag == agentID)
+			while(trust.hasNext())
 			{
-				trustAmount = amount;
-				break;
+				Term[] trust_terms = trust.next().getTermsArray();
+				int agentID = Integer.parseInt(trust_terms[0].toString());
+				int amount = Integer.parseInt(trust_terms[1].toString());
+				if(ag == agentID)
+				{
+					trustAmount = amount;
+					break;
+				}
 			}
 		}
 		return trustAmount;
 	}
 	
-	//Get your belief on the rolea of the Kernel
+	//Get your belief on the role of the Kernel
 	public int getKernelID()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("kernel(X)"), null);
@@ -164,6 +178,7 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return -1;
 	}
 	
+	//Get the number of virus cards currently in hand
 	public int getHeldVirus()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("heldVirus(X)"), null);
@@ -178,6 +193,7 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return -1;
 	}
 	
+	//Get number of antivirus cards currently in hand
 	public int getHeldAntiVirus()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("heldAntiVirus(X)"), null);
@@ -192,6 +208,7 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return -1;
 	}
 	
+	//Get your belief on the role of the Scheduler
 	public int getSchedulerID()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("scheduler(X)"), null);
@@ -206,6 +223,7 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return -1;
 	}
 	
+	//Returns the ID of yourself
 	public int getID()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("player(X)"), null);
@@ -219,6 +237,7 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return -1;
 	}
 	
+	//Returns a list of agents who are confirmed not the virus
 	public ArrayList<Integer> getNotVirusAgents()
 	{
 		Iterator<Literal> notVirus = getDefaultBeliefs(Literal.parseLiteral("notVirus(X)"), null);
@@ -240,6 +259,7 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return notVirusAgents;
 	}
 	
+	//Get the roles of every player (only for rogue and virus)
 	public Literal getRoleBelief(int ag)
 	{
 		Iterator<Literal> percepts = getPercepts();
