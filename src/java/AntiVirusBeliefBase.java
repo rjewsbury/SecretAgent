@@ -147,11 +147,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		//AntiVirus agents should not try to kill agents who are confirmed notVirus
 		for(Integer ID1 : notVirusAgents)
 		{
-			for(Integer ID2 : candidates)
-			{
-				if(ID1 == ID2)
-					candidates.remove(Integer.valueOf(ID1));
-			}
+			candidates.remove(Integer.valueOf(ID1));
 		}
 		
 		//Randomly pick an agent to kill
