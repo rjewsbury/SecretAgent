@@ -34,11 +34,14 @@ public class View extends GridWorldView
 	
 	public void updateMessages()
 	{
+		final int MAX_WIDTH = 3;
 		for(int y = 0; y < Model.GRID_HEIGHT; y++)
 			for(int x = 0; x < Model.GRID_WIDTH; x++)
 				if(model.hasObject(Model.MESSAGE,x,y)){
-					update(x-1,y);
-					update(x+1,y);
+					//clear the surrounding cells of old messages
+					for(int i = -MAX_WIDTH/2; i <= MAX_WIDTH/2; i++)
+						update(x+i,y);
+					//then draw the new message
 					update(x,y);
 				}
 	}

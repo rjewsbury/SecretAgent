@@ -158,14 +158,14 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!revealIdentity(X)
 	: player(P) & P=X & isVirus
 	<-  .print("Revealing Identity: VIRUS");
-		addMessage('YE DOG');
+		addMessage('YEAH BOIIIIII');
 		.broadcast(tell, virusRevealed(P));
 		wait.
 	
 +!revealIdentity(X)
 	: player(P) & P=X & not isVirus
 	<-  .print("Revealing Identity: NOT VIRUS");
-		addMessage('NO U');
+		addMessage('Im not I swear!');
 		.broadcast(tell, notVirus(P)).
 	
 +!revealIdentity(X)
@@ -264,7 +264,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 //once a card is played, update trust
 +!waitForScheduler
 	: cardPlayed
-	<-	//do something with the information about the card playes
+	<-	//do something with the information about the card played
 		!interpretCardPlayed;
 		wait.
 		
@@ -279,15 +279,34 @@ isDead :- player(X) & dead(Y) & X = Y.
 	<-	-trust(S, T);
 		+trust(S, T+5).
 
+//if it's already been decided how to discard, then discard the card.
+//keep the belief long enough to decide what to tell people,
+//then we don't need it
++!discardCard
+	: discard(D) & D = 0
+	<-	.print("discarding a virus");
+		!broadcastHand;
+		-discard(D);
+		discardVirus.
+
++!discardCard
+	: discard(D) & D = 1
+	<-	.print("discarding a antivirus");
+		!broadcastHand;
+		-discard(D);
+		discardAntiVirus.		
+
 //decides how to discard a card.
 //if there's no choice to be made, automatically decides
 +!discardCard
 	: heldVirus(V) & heldAntiVirus(A) & V = 0 & A > 0
-	<- discardAntiVirus.
+	<-	+discard(1);	//discard an antivirus
+		!discardCard.
 	
 +!discardCard
 	: heldVirus(V) & heldAntiVirus(A) & V > 0 & A = 0
-	<- discardVirus.
+	<- 	+discard(0);		//discard a virus
+		!discardCard.
 	
 //if there is a choice to be made, defer to the belief base
 //discardDecision == 0 means discard a virus
@@ -295,15 +314,18 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!discardCard
 	: heldVirus(V) & heldAntiVirus(A) & V > 0 & A > 0
 	<-	?discardDecision(X);
-		!discardCard(X).
+		+discard(X);
+		!discardCard.
 
-+!discardCard(X)
-	: X = 0
-	<-	discardVirus.
-
-+!discardCard(X)
-	: X = 1
-	<-	discardAntiVirus.
+//agents have the option to lie to other agents when telling them what cards
+//they got. to do this, the decision on which beliefs to send has to go through
+//the custom belief base
++!broadcastHand
+	: player(ID)
+	<-	?handBroadcastDecision(A, V);
+		.broadcast(tell, heldAntiVirus(ID, A));
+		.broadcast(tell, heldVirus(ID, V));
+		!addHandMessage(A, V).
 
 //only the scheduler can play cards, and there should be no decision to make
 +!playCard
@@ -326,3 +348,34 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!useAbility
 	: true
 	<- wait.
+	
+//these methods are just for the aesthetics of broadcasting their hand
++!addHandMessage(A, V)
+	: player(ID) & kernel(K) & K=ID & V=0
+	<-	addMessage('You wont believe this');
+		wait;	//build anticipation
+		wait;	//build MORE anticipation
+		addMessage('I got ', A, ' Liberal!').
+		
++!addHandMessage(A, V)
+	: player(ID) & kernel(K) & K=ID & A=0
+	<-	addMessage('You wont believe this');
+		wait;	//build anticipation
+		wait;	//build MORE anticipation
+		addMessage('I got ', V, ' Fascist!').
+		
++!addHandMessage(A, V)
+	: player(ID) & kernel(K) & K=ID & A > 0 & V > 0
+	<-	addMessage('I got ', A, ' A and ', V, ' V').
+	
++!addHandMessage(A, V)
+	: player(ID) & scheduler(S) & S=ID & A=0
+	<-	addMessage('He gave me ',V,' Virus').
+	
++!addHandMessage(A, V)
+	: player(ID) & scheduler(S) & S=ID & V=0
+	<-	addMessage('He gave me ',A,' Anti').
+	
++!addHandMessage(A, V)
+	: player(ID) & scheduler(S) & S=ID & A>0 & V>0
+	<-	addMessage('He gave me ',V,' and ',A).

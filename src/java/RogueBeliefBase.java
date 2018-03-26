@@ -100,4 +100,14 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		result.add(candidate);
 		return result.iterator();
 	}
+	
+	public Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u)
+	{
+		int heldVirus = getHeldVirus();
+		int heldAntiVirus = getHeldAntiVirus();
+		Literal handDecision = Literal.parseLiteral("handBroadcastDecision("+heldAntiVirus+","+heldVirus+")");
+		List<Literal> result = new ArrayList<Literal>();
+		result.add(handDecision);
+		return result.iterator();
+	}
 }

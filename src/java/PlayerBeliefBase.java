@@ -18,6 +18,8 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 			return getDiscardDecision(l, u);
 		else if(l.getFunctor().equals("deleteDecision"))
 			return getDeleteDecision(l, u);
+		else if(l.getFunctor().equals("handBroadcastDecision"))
+			return getHandBroadcastDecision(l, u);
 		else	
 			return super.getCandidateBeliefs(l, u);
 	}
@@ -35,6 +37,8 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 	public abstract Iterator<Literal> getDiscardDecision(Literal l, Unifier u);
 	
 	public abstract Iterator<Literal> getDeleteDecision(Literal l, Unifier u);
+	
+	public abstract Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u);
 	
 	//Get your belief on the rolea of the Kernel
 	public int getKernelID()
@@ -62,6 +66,34 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 			Term[] terms = p.getTermsArray();
 			int electedSchedulerID = Integer.parseInt(terms[0].toString());
 			return electedSchedulerID;
+		}
+		return -1;
+	}
+	
+	public int getHeldVirus()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("heldVirus(X)"), null);
+		while (percepts.hasNext())
+		{
+			Literal p = percepts.next();
+			//Get the number of held virus
+			Term[] terms = p.getTermsArray();
+			int heldVirus = Integer.parseInt(terms[0].toString());
+			return heldVirus;
+		}
+		return -1;
+	}
+	
+	public int getHeldAntiVirus()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("heldAntiVirus(X)"), null);
+		while (percepts.hasNext())
+		{
+			Literal p = percepts.next();
+			//Get the number of held virus
+			Term[] terms = p.getTermsArray();
+			int heldAntiVirus = Integer.parseInt(terms[0].toString());
+			return heldAntiVirus;
 		}
 		return -1;
 	}

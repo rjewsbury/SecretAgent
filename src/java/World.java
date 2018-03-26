@@ -125,7 +125,7 @@ public class World extends TimeSteppedEnvironment {
 				view.updateAgents();
 				view.updateMessages();
 			}
-			try { Thread.sleep(50); } catch (InterruptedException x) { }
+			try { Thread.sleep(10); } catch (InterruptedException x) { }
 			updatePercepts();
 		}
 		
