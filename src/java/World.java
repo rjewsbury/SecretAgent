@@ -121,11 +121,11 @@ public class World extends TimeSteppedEnvironment {
 		
 		if (result)
 		{
-			if(view != null){
+			if(view != null & model.checkRequireViewUpdate()){
 				view.updateAgents();
 				view.updateMessages();
 			}
-			try { Thread.sleep(100); } catch (InterruptedException x) { }
+			try { Thread.sleep(1); } catch (InterruptedException x) { }
 			updatePercepts();
 		}
 		

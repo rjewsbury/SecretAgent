@@ -68,6 +68,8 @@ public class Model extends GridWorldModel
 	private int cardPlayed = 0;
 	private int numVotesFailed = 0;
 	
+	private boolean requireViewUpdate = false;
+	
 	//initialization ----------------------------------
 	
 	public Model(int players)
@@ -248,7 +250,9 @@ public class Model extends GridWorldModel
 		//if everyone voted
 		if(numYes + numNo == getNumAlive())
 		{
+			requireViewUpdate = true;
 			voteComplete = true;
+			
 			numVotesFailed = 0;
 			if(numYes > numNo){
 				schedulerID = electedSchedulerID;
@@ -349,14 +353,14 @@ public class Model extends GridWorldModel
 		return heldAntiVirus;
 	}
 	
-	public String getMessage(int ag)
-	{
-		return messages[ag];
-	}
+	public String getMessage(int ag){ return messages[ag]; }
 	
-	public boolean getAlive(int ag)
-	{
-		return alive[ag];
+	public boolean getAlive(int ag){ return alive[ag]; }
+	
+	public boolean checkRequireViewUpdate(){
+		boolean temp = requireViewUpdate;
+		requireViewUpdate = false;
+		return temp;
 	}
 
 	//actions -----------------------------------------
@@ -364,6 +368,8 @@ public class Model extends GridWorldModel
 	public boolean passKernel(int ag){
 		if(!hand[kernelID].isEmpty() || (schedulerID != -1 && !hand[schedulerID].isEmpty()))
 			return false;
+		
+		requireViewUpdate = true;
 		
 		exKernelID = kernelID;
 		if(schedulerID != -1)
@@ -383,6 +389,9 @@ public class Model extends GridWorldModel
 	{
 		if(electedSchedulerID != -1 || ag != kernelID)
 			return false;
+		
+		requireViewUpdate = true;
+		
 		electedSchedulerID = target;
 		return true;
 	}
@@ -391,6 +400,7 @@ public class Model extends GridWorldModel
 	{
 		if(ag != kernelID || board[numVirusPlayed - 1] != DELETE_AGENT)
 			return false;
+		
 		alive[target] = false;
 		board[numVirusPlayed - 1] = NO_ABILITY;
 		return true;
@@ -502,12 +512,14 @@ public class Model extends GridWorldModel
 	public boolean addMessage(int ag, String msg)
 	{
 		messages[ag] = msg;
+		requireViewUpdate = true;
 		return true;
 	}
 	
 	public boolean deleteMessage(int ag)
 	{
 		messages[ag] = null;
+		requireViewUpdate = true;
 		return true;
 	}
 }

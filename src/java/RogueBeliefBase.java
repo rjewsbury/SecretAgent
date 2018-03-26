@@ -114,7 +114,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 	
 	public Iterator<Literal> getDiscardDecision(Literal l, Unifier u)
 	{
-		Literal voteDecision = Literal.parseLiteral("discardDecision(1)");
+		Literal voteDecision = Literal.parseLiteral("discardDecision(antivirus)");
 		List<Literal> result = new ArrayList<Literal>();
 		result.add(voteDecision);
 		return result.iterator();
@@ -144,7 +144,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		result.add(candidate);
 		return result.iterator();
 	}
-	
+
 	public int getVirusID()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("isVirus(X)"), null);
@@ -157,5 +157,15 @@ public class RogueBeliefBase extends PlayerBeliefBase
 			return virusID;
 		}
 		return -1;
+	}
+	
+	public Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u)
+	{
+		int heldVirus = getHeldVirus();
+		int heldAntiVirus = getHeldAntiVirus();
+		Literal handDecision = Literal.parseLiteral("handBroadcastDecision("+heldAntiVirus+","+heldVirus+")");
+		List<Literal> result = new ArrayList<Literal>();
+		result.add(handDecision);
+		return result.iterator();
 	}
 }

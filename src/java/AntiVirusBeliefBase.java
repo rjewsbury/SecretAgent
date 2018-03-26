@@ -124,7 +124,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 	
 	public Iterator<Literal> getDiscardDecision(Literal l, Unifier u)
 	{
-		Literal voteDecision = Literal.parseLiteral("discardDecision(0)");
+		Literal voteDecision = Literal.parseLiteral("discardDecision(virus)");
 		List<Literal> result = new ArrayList<Literal>();
 		result.add(voteDecision);
 		return result.iterator();
@@ -163,6 +163,16 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		candidate = Literal.parseLiteral("deleteDecision(" + agentID +")");
 		List<Literal> result = new ArrayList<Literal>();
 		result.add(candidate);
+		return result.iterator();
+	}
+	
+	public Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u)
+	{
+		int heldVirus = getHeldVirus();
+		int heldAntiVirus = getHeldAntiVirus();
+		Literal handDecision = Literal.parseLiteral("handBroadcastDecision("+heldAntiVirus+","+heldVirus+")");
+		List<Literal> result = new ArrayList<Literal>();
+		result.add(handDecision);
 		return result.iterator();
 	}
 }

@@ -117,11 +117,11 @@ public class VirusBeliefBase extends PlayerBeliefBase
 	{
 		int virusPlayed = getVirusPlayed();
 		int antiVirusPlayed = getAntiVirusPlayed();
-		Literal discardDecision = Literal.parseLiteral("discardDecision(0)");
+		Literal discardDecision = Literal.parseLiteral("discardDecision(virus)");
 		if(virusPlayed > 4)	
-			discardDecision = Literal.parseLiteral("discardDecision(1)");
+			discardDecision = Literal.parseLiteral("discardDecision(antivirus)");
 		else if(antiVirusPlayed > 3)
-			discardDecision = Literal.parseLiteral("discardDecision(1)");
+			discardDecision = Literal.parseLiteral("discardDecision(antivirus)");
 		
 		List<Literal> result = new ArrayList<Literal>();
 		result.add(discardDecision);
@@ -147,6 +147,16 @@ public class VirusBeliefBase extends PlayerBeliefBase
 		candidate = Literal.parseLiteral("deleteDecision(" + agentID +")");
 		List<Literal> result = new ArrayList<Literal>();
 		result.add(candidate);
+		return result.iterator();
+	}
+	
+	public Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u)
+	{
+		int heldVirus = getHeldVirus();
+		int heldAntiVirus = getHeldAntiVirus();
+		Literal handDecision = Literal.parseLiteral("handBroadcastDecision("+heldAntiVirus+","+heldVirus+")");
+		List<Literal> result = new ArrayList<Literal>();
+		result.add(handDecision);
 		return result.iterator();
 	}
 }
