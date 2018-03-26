@@ -238,7 +238,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!waitForVote
 	: voteComplete
 	<-	//do something with the information about votes
-		!interpretVotes
+		!interpretVotes;
 		deleteMessage.
 		
 //if this agent has never seen that player vote before, create a trust belief
@@ -298,7 +298,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 	<-	.print("discarding a antivirus");
 		!broadcastHand;
 		-discard(D);
-		discardAntiVirus.		
+		discardAntiVirus.	
 
 //decides how to discard a card.
 //if there's no choice to be made, automatically decides

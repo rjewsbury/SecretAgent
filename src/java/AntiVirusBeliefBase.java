@@ -54,6 +54,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		//X is id, Y is amount
 		
 			//If the elected scheduler is not the virus
+		try{
 			if(notVirusAgents.size() > 0)
 			{
 				for(Integer ID: notVirusAgents)
@@ -87,6 +88,7 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 					}
 				}
 			}
+		}catch(NullPointerException e){}
 		
 		//Take the final vote 
 		Literal voteDecision = Literal.parseLiteral("voteDecision("+ vote +")");
