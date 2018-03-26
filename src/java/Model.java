@@ -266,8 +266,7 @@ public class Model extends GridWorldModel
 				numVotesFailed = 0;
 			}
 			else{
-				System.out.println("NUM VOTES FAILED = "+numVotesFailed);
-				numVotesFailed++;//do we need extra logic if the vote fails?
+				numVotesFailed++;
 				if(numVotesFailed >= 3)
 				{
 					if(deck.isEmpty())

@@ -334,6 +334,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 	: hasBullet
 	<-	?deleteDecision(X);
 		.print("Using Bullet on ", X);
+		addMessage('Shooting ',X);
 		deleteAgent(X)
 		!askIdentity(X).
 		
