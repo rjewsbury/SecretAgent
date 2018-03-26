@@ -1,5 +1,5 @@
 //Ending the game
-virusWin :- (virusPlayed(V) & V = 6) | (scheduler(S) & virusRevealed(X) & S=X).
+virusWin :- (virusPlayed(V) & V = 6) | virusRevealed(X).
 antiVirusWin :- (antiVirusPlayed(A) & A = 5) | (virusRevealed(V) & dead(X) & V=X).
 
 //Player Elected Position
@@ -52,8 +52,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 
 +!play
 	: isDead
-	<-  wait;
-		!play.
+	<-  !waitForever.
 	
 //if no scheduler has been elected, elect a scheduler
 +!play
@@ -148,8 +147,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 -!play
 	:true
 	<-	.print("FAILED TO PLAY");
-		wait;
-		!play.
+		wait.
 	   
 +!revealIdentity(X)
 	: player(P) & P=X & isVirus

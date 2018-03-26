@@ -2,6 +2,9 @@ import jason.environment.*;
 import jason.environment.grid.GridWorldView;
 import jason.environment.grid.Location;
 import java.awt.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import java.awt.BorderLayout;
 
 public class View extends GridWorldView
 {
@@ -14,17 +17,23 @@ public class View extends GridWorldView
 	Font defaultFont = new Font("Arial", Font.BOLD, 15);
 	Model model;
 	
-	public View(Model _model)
+	public View(Model _model, ChangeListener l, int initialVal)
 	{
+		//creates a 700x700 view for the model
 		super(_model, "My View", 700);
 		this.model = _model;
+		
+		//adds a speed slider to the view
+		JSlider slider = new JSlider(1,300,initialVal);
+		slider.addChangeListener(l);
+		getContentPane().add(slider,BorderLayout.SOUTH);
 		setVisible(true);
 		repaint();
 	}
 	
 	public void updateAgents(){
-		//this is a bad hack to update the rolls of the agents
-		//nothing actually changes in the environment,
+		//this updates the roles of the agents displayed on screen
+		//no cells actually change in the environment,
 		//so it doesnt update automatically
 		for(int y = 0; y < Model.GRID_HEIGHT; y++)
 			for(int x = 0; x < Model.GRID_WIDTH; x++)
@@ -34,11 +43,15 @@ public class View extends GridWorldView
 	
 	public void updateMessages()
 	{
+		//clears previous messages, and draws new ones
+		//messages can be at most 3 tiles wide
 		final int MAX_WIDTH = 3;
+		
 		for(int y = 0; y < Model.GRID_HEIGHT; y++)
 			for(int x = 0; x < Model.GRID_WIDTH; x++)
 				if(model.hasObject(Model.MESSAGE,x,y)){
 					//clear the surrounding cells of old messages
+					//this is necessary because messages are larger than a single cell
 					for(int i = -MAX_WIDTH/2; i <= MAX_WIDTH/2; i++)
 						update(x+i,y);
 					//then draw the new message
@@ -49,6 +62,7 @@ public class View extends GridWorldView
 	@Override
 	public void draw(Graphics g, int x , int y, int object)
 	{
+		//all blocks are filled in, and given a darker outline
 		if(object == Model.TABLE){
 			g.setColor(TABLE_COLOR);
 			g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
@@ -61,18 +75,24 @@ public class View extends GridWorldView
 			g.setColor(Color.DARK_GRAY);
 			g.drawRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
 		}
+		//cards are given a letter
 		if(object == Model.VIRUS_CARD){
 			g.setColor(ROGUE_COLOR);
 			g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
 			g.setColor(ROGUE_COLOR.darker());
 			g.drawRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
+			g.setColor(Color.BLACK);
+			drawString(g, x, y, defaultFont, "V");
 		}
 		if(object == Model.ANTI_VIRUS_CARD){
 			g.setColor(ANTI_VIRUS_COLOR);
 			g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
 			g.setColor(ANTI_VIRUS_COLOR.darker());
 			g.drawRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
+			g.setColor(Color.BLACK);
+			drawString(g, x, y, defaultFont, "A");
 		}
+		//messages are drawn above their player
 		if(object == Model.MESSAGE)
 		{
 			int ag = model.getAgAtPos(x, y + 1);
@@ -84,8 +104,8 @@ public class View extends GridWorldView
 	}
 	
 	public void drawAgent(Graphics g, int x, int y, Color c, int id){
-		
-		String display = "";
+		//agents are given different colors depending on their role
+		//and change color once they die
 		if(!model.getAlive(id))
 			super.drawAgent(g,x,y,DEAD_COLOR,-1);
 		else if(model.getRole(id) == model.VIRUS_ROLE)
@@ -95,6 +115,8 @@ public class View extends GridWorldView
 		else if(model.getRole(id) == model.ANTI_VIRUS_ROLE)
 			super.drawAgent(g,x,y,ANTI_VIRUS_COLOR,-1);
 		
+		//the agent's role is displayed in their center
+		String display = "";
 		if(model.getKernel() == id)
 			display += "K";
 		else if(model.getScheduler() == id)
@@ -108,6 +130,8 @@ public class View extends GridWorldView
 		
 		g.setColor(Color.BLACK);
 		drawString(g, x, y, defaultFont, display);
+		
+		//draws the agent's number in the corner of their cell
 		g.drawString(""+id, x*cellSizeW+5,(y+1)*cellSizeH-5);
 	}
 }

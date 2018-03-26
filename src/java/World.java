@@ -5,10 +5,11 @@ import jason.mas2j.ClassParameters;
 
 import java.util.List;
 import java.util.logging.*;
-import javax.swing.JOptionPane;
+import javax.swing.*;
+import javax.swing.event.*;
 
-public class World extends TimeSteppedEnvironment {
-
+public class World extends TimeSteppedEnvironment implements ChangeListener {
+	
 	private Logger logger = Logger.getLogger("secretagent."+World.class.getName());
 	
 	private static final Literal passKernel = Literal.parseLiteral("passKernel");
@@ -30,6 +31,7 @@ public class World extends TimeSteppedEnvironment {
 	//however the model itself can handle 5-10, for future development
 	private static final int NUM_PLAYERS = 6;
 	
+	int delay;
 	private boolean useGui;
 	Model model;
 	View view;
@@ -51,17 +53,24 @@ public class World extends TimeSteppedEnvironment {
 		
 		if (useGui)
 		{
-			view = new View(model);
+			delay = 150;
+			view = new View(model, this, delay);
 			model.setView(view);
 		}
 		try { Thread.sleep(2000); } catch (InterruptedException x) { }
 		
 		//Makes all the squares turn white at the start
-		for(int x = 0; x < model.GRID_WIDTH; x++)
-			for(int y = 0; y < model.GRID_HEIGHT; y++)
-				view.update(x, y);
+		if(view != null)
+			for(int x = 0; x < model.GRID_WIDTH; x++)
+				for(int y = 0; y < model.GRID_HEIGHT; y++)
+					view.update(x, y);
 		
 		updatePercepts();
+	}
+	
+	@Override
+	public void stateChanged(ChangeEvent e){
+		delay = ((JSlider)e.getSource()).getValue();
 	}
 
 	@Override
@@ -125,7 +134,7 @@ public class World extends TimeSteppedEnvironment {
 				view.updateAgents();
 				view.updateMessages();
 			}
-			try { Thread.sleep(1); } catch (InterruptedException x) { }
+			try { Thread.sleep(delay); } catch (InterruptedException x) { }
 			updatePercepts();
 		}
 		

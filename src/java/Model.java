@@ -8,6 +8,8 @@ import java.util.logging.*;
 public class Model extends GridWorldModel
 {
 	//constants ---------------------------------------
+	//the number of players in the game by default.
+	//the model handles 
 	public static final int DEFAULT_PLAYERS = 6;
 	
 	public static final int TABLE = 1 << 3;
@@ -43,27 +45,33 @@ public class Model extends GridWorldModel
 	
 	//variables ---------------------------------------
 	
+	//the number of players currently playing 
 	private int num_players;
 	
+	//variables tracking the location of cards
 	private int numVirusPlayed;
 	private int numAntiVirusPlayed;
 	private List<Integer> deck;
 	private List<Integer> discard;
 	private List<Integer>[] hand;
+	//tracks the abilities on the board
+	private int[] board;
 	
+	//variables tracking player's state
 	private int[] role;
 	private String[] name;
-	private int[] board;
 	private int[] votes;
 	private String[] messages;
 	private boolean[] alive;
 	
+	//variables tracking role state
 	private int kernelID = 0;
 	private int exKernelID = -1;
 	private int schedulerID = -1;
 	private int exSchedulerID = -1;
 	private int electedSchedulerID = -1;
 	
+	//variables tracking the state of the current round
 	private boolean voteComplete = false;
 	private int cardPlayed = 0;
 	private int numVotesFailed = 0;
