@@ -375,7 +375,7 @@ public class Model extends GridWorldModel
 	
 	public boolean deleteAgent(int ag, int target)
 	{
-		if(ag != kernelID || board[numVirusPlayed] != DELETE_AGENT)
+		if(ag != kernelID || board[numVirusPlayed - 1] != DELETE_AGENT)
 			return false;
 		alive[target] = false;
 		board[numVirusPlayed - 1] = NO_ABILITY;

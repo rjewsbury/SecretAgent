@@ -36,6 +36,41 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 	
 	public abstract Iterator<Literal> getDeleteDecision(Literal l, Unifier u);
 	
+	//public abstract Iterator<Literal> getTrustDecision(Literal l, Unifier u);
+	
+	public int getVirusPlayed()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("virusPlayed(X)"), null);
+		int numVirusPlayed = 0;
+		while (percepts.hasNext())
+		{
+			Literal p = percepts.next();
+			//Get the number of Virus cards played
+			Term[] terms = p.getTermsArray();
+			numVirusPlayed = Integer.parseInt(terms[0].toString());
+		}
+		return numVirusPlayed;
+	}
+	
+	public int getTrust(int ag)
+	{
+		Iterator<Literal> trust = getDefaultBeliefs(Literal.parseLiteral("trust(X, Y)"), null);
+		int trustAmount = 0;
+		
+		while(trust.hasNext())
+		{
+			Term[] trust_terms = trust.next().getTermsArray();
+			int agentID = Integer.parseInt(trust_terms[0].toString());
+			int amount = Integer.parseInt(trust_terms[1].toString());
+			if(ag == agentID)
+			{
+				trustAmount = amount;
+				break;
+			}
+		}
+		return trustAmount;
+	}
+	
 	//Get your belief on the rolea of the Kernel
 	public int getKernelID()
 	{
@@ -64,6 +99,41 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 			return electedSchedulerID;
 		}
 		return -1;
+	}
+	
+	public int getSchedulerID()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("scheduler(X)"), null);
+		while (percepts.hasNext())
+		{
+			Literal p = percepts.next();
+			//Get the Elected Scheduler ID
+			Term[] terms = p.getTermsArray();
+			int schedulerID = Integer.parseInt(terms[0].toString());
+			return schedulerID;
+		}
+		return -1;
+	}
+	
+	public ArrayList<Integer> getNotVirusAgents()
+	{
+		Iterator<Literal> notVirus = getDefaultBeliefs(Literal.parseLiteral("notVirus(X)"), null);
+		ArrayList<Integer> notVirusAgents = new ArrayList<Integer>();
+		Literal candidate;
+		
+		try
+		{
+			while(notVirus.hasNext())
+			{
+				candidate = notVirus.next();
+				Term[] candidate_terms = candidate.getTermsArray();
+				int agentID = Integer.parseInt(candidate_terms[0].toString());
+				notVirusAgents.add(agentID);
+			}
+		}
+		catch(NullPointerException ex){}
+		
+		return notVirusAgents;
 	}
 	
 	public Literal getRoleBelief(int ag)

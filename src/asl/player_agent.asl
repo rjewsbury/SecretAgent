@@ -68,7 +68,12 @@ isDead :- player(X) & dead(Y) & X = Y.
 		!play.
 
 +!play
-	: not isKernel & not isScheduler & voteComplete & not cardPlayed
+	: not isKernel & not isScheduler & voteComplete & not cardPlayed & not scheduler(S)
+	<-	wait;
+		!play.
+		
++!play
+	: not isKernel & not isScheduler & voteComplete & not cardPlayed & scheduler(S)
 	<-	!waitForScheduler;
 		//make beliefs based on what card was played
 		!play.
@@ -88,15 +93,6 @@ isDead :- player(X) & dead(Y) & X = Y.
 		+askedIdentity;
 		!waitForResponse(S);
 		!play.
-		
-+!waitForResponse(S)
-	: notVirus(S) | virusElected
-	<- wait.
-	
-+!waitForResponse(S)
-	: true
-	<- 	wait;
-		!waitForResponse(S).
 		
 //if the vote passed, draw 3 cards
 +!play
@@ -152,20 +148,28 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!revealIdentity
 	: isScheduler & isVirus
 	<-  .print("Revealing Identity: VIRUS");
-		addMessage('YE DOG');
+		addMessage('I AM VIRUS');
 		.broadcast(tell, virusElected);
 		wait.
 	
 +!revealIdentity
 	: isScheduler & not isVirus & player(X)
 	<-  .print("Revealing Identity: NOT VIRUS");
-		addMessage('NO U');
+		addMessage('NOT VIRUS');
 		.broadcast(tell, notVirus(X)).
 	
 +!revealIdentity
 	: not isScheduler
 	<- wait.
 	
++!waitForResponse(S)
+	: notVirus(S) | virusElected
+	<- wait.
+	
++!waitForResponse(S)
+	: true
+	<- 	wait;
+		!waitForResponse(S).
 		
 +!electScheduler
 	: isKernel
@@ -241,7 +245,7 @@ isDead :- player(X) & dead(Y) & X = Y.
 		& vote(P, Y) & trust(P, T) & not interpretedVote(P)
 		& not(X = Y)
 	<-	-trust(P, T);
-		+trust(P, T-1);
+		+trust(P, T-2);
 		+interpretedVote(P);
 		!interpretVotes.
 
@@ -266,12 +270,12 @@ isDead :- player(X) & dead(Y) & X = Y.
 +!interpretCardPlayed
 	: scheduler(S) & trust(S, T) & virusPlayed
 	<-	-trust(S, T);
-		+trust(S, T-5).
+		+trust(S, T-12).
 		
 +!interpretCardPlayed
 	: scheduler(S) & trust(S, T) & antiVirusPlayed
 	<-	-trust(S, T);
-		+trust(S, T+5).
+		+trust(S, T+10).
 
 //decides how to discard a card.
 //if there's no choice to be made, automatically decides

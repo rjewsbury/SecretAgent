@@ -70,8 +70,6 @@ public class World extends TimeSteppedEnvironment {
 		boolean result = false;
 		int agentId = model.getNameIndex(agName);
 		
-		//System.out.println("-----"+agName+"-----"+action);
-		
 		if (action.equals(passKernel))
 			result = model.passKernel(agentId);
 		else if(action.getFunctor().equals(electScheduler.getFunctor()))
@@ -118,6 +116,8 @@ public class World extends TimeSteppedEnvironment {
 			logger.info("executing: "+action+", but not implemented!");
 		
 		//logger.info(model.getName(i)+" did something!");
+		//if(!action.equals(wait))
+		//	System.out.println("-----"+agName+"-----"+action+"------"+result);
 		
 		if (result)
 		{
@@ -125,7 +125,7 @@ public class World extends TimeSteppedEnvironment {
 				view.updateAgents();
 				view.updateMessages();
 			}
-			try { Thread.sleep(50); } catch (InterruptedException x) { }
+			try { Thread.sleep(100); } catch (InterruptedException x) { }
 			updatePercepts();
 		}
 		
