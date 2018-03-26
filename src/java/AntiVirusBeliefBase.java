@@ -43,33 +43,83 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 		Iterator<Literal> i;
 		int kernelID = getKernelID();
 		int electedSchedulerID = getElectedSchedulerID();
+		int numVirusPlayed = getVirusPlayed();
 		int NO_VOTE = 0;
 		int YES_VOTE = 1;
-		int vote = -1;
+		int vote = YES_VOTE;
 		
-		//If believe both are safe
-		if(true)
-			vote = YES_VOTE;
-		//Don't believe the Kernel is safe
-		/*else if(true)
-			vote = YES_VOTE;
-		//Don't believe Scheduler is safe
-		else if(true) 
-			vote = NO_VOTE;
-		else
-			vote = NO_VOTE;*/
+		Iterator<Literal> notVirus = getDefaultBeliefs(Literal.parseLiteral("notVirus(X)"), null);
+		ArrayList<Integer> notVirusAgents = getNotVirusAgents();
+		Literal candidate;
+		//X is id, Y is amount
 		
-		try
-		{	
-			Literal voteDecision = Literal.parseLiteral("voteDecision("+ vote +")");
-			List<Literal> result = new ArrayList<Literal>();
-			result.add(voteDecision);
-			return result.iterator();
-		}
-		catch(NullPointerException ex)
+			//If the elected scheduler is not the virus
+			if(notVirusAgents.size() > 0)
+			{
+				for(Integer ID: notVirusAgents)
+				{
+					if(ID == electedSchedulerID)
+					{
+						vote = YES_VOTE;
+						break;
+					}
+					else if(ID != electedSchedulerID)
+					{
+						Iterator<Literal> trust = getDefaultBeliefs(Literal.parseLiteral("trust(X, Y)"), null);
+						while(trust.hasNext())
+						{
+							Term[] trust_terms = trust.next().getTermsArray();
+							int agentID = Integer.parseInt(trust_terms[0].toString());
+							int trustAmount = Integer.parseInt(trust_terms[1].toString());
+							if(agentID == electedSchedulerID && trustAmount > 20 && numVirusPlayed >= 3)
+							{
+								vote = YES_VOTE;
+								break;
+							}
+							else if(agentID == electedSchedulerID && trustAmount > -1 && numVirusPlayed < 3)
+							{
+								vote = YES_VOTE;
+								break;
+							}
+							else if(agentID == electedSchedulerID && trustAmount < 0)
+								vote = NO_VOTE;
+						}
+					}
+				}
+			}
+		
+		//Take the final vote 
+		Literal voteDecision = Literal.parseLiteral("voteDecision("+ vote +")");
+		List<Literal> result = new ArrayList<Literal>();
+		result.add(voteDecision);
+		return result.iterator();
+	}
+	
+	public Iterator<Literal> getTrustDecision(Literal l, Unifier u)
+	{
+		int agentID = Integer.parseInt(l.getTermsArray()[0].toString());
+		int trust = getTrust(agentID);
+		
+		int kernelID = getKernelID();
+		int schedulerID = getSchedulerID();
+		
+		
+		/*//If Kernel
+		if(agentID == kernelID)
 		{
-			return getDefaultBeliefs(l, u);
+			
 		}
+		
+		//If Scheduler
+		if(agentID == schedulerID)
+		{
+				
+		}*/
+		
+		List<Literal> result = new ArrayList<Literal>();
+		Literal trustDecision = Literal.parseLiteral("trustDecision("+ agentID +","+ trust +")");
+		result.add(trustDecision);
+		return result.iterator();
 	}
 	
 	public Iterator<Literal> getDiscardDecision(Literal l, Unifier u)
@@ -94,7 +144,21 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 			candidates.add(agentID);
 		}
 		Random r = new Random();
-		int pick = r.nextInt(candidates.size()); 
+		int pick = r.nextInt(candidates.size() - 1); 
+		
+		Iterator<Literal> notVirus = getDefaultBeliefs(Literal.parseLiteral("notVirus(X)"), null);
+		ArrayList<Integer> notVirusAgents = new ArrayList<Integer>();
+		
+		while(notVirus.hasNext())
+		{
+			candidate = notVirus.next();
+			Term[] candidate_terms = candidate.getTermsArray();
+			int agentID = Integer.parseInt(candidate_terms[0].toString());
+			notVirusAgents.add(agentID);
+		}
+		
+		//int pick = r.nextInt(candidates.size());
+		
 		int agentID = candidates.get(pick);
 		candidate = Literal.parseLiteral("deleteDecision(" + agentID +")");
 		List<Literal> result = new ArrayList<Literal>();

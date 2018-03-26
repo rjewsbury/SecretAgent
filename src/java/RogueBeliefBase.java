@@ -42,22 +42,63 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		Iterator<Literal> i;
 		int kernelID = getKernelID();
 		int electedSchedulerID = getElectedSchedulerID();
+		int numVirusPlayed = getVirusPlayed();
 		int NO_VOTE = 0;
 		int YES_VOTE = 1;
-		int vote = -1;
+		int vote = YES_VOTE;
 		
-		//If believe both are safe
-		if(true)
-			vote = YES_VOTE;
-		//Don't believe the Kernel is safe
-		/*else if(true)
-			vote = YES_VOTE;
-		//Don't believe Scheduler is safe
-		else if(true) 
-			vote = NO_VOTE;
-		else
-			vote = NO_VOTE;*/
+		Iterator<Literal> notVirus = getDefaultBeliefs(Literal.parseLiteral("notVirus(X)"), null);
+		ArrayList<Integer> notVirusAgents = new ArrayList<Integer>();
+		Literal candidate;
+		//X is id, Y is amount
 		
+		try
+		{
+			while(notVirus.hasNext())
+			{
+				candidate = notVirus.next();
+				Term[] candidate_terms = candidate.getTermsArray();
+				int agentID = Integer.parseInt(candidate_terms[0].toString());
+				notVirusAgents.add(agentID);
+			}
+			//If the elected scheduler is not the virus
+			if(notVirusAgents.size() > 0)
+			{
+				for(Integer ID: notVirusAgents)
+				{
+					if(ID == electedSchedulerID)
+					{
+						vote = YES_VOTE;
+						break;
+					}
+					else if(ID != electedSchedulerID)
+					{
+						Iterator<Literal> trust = getDefaultBeliefs(Literal.parseLiteral("trust(X, Y)"), null);
+						while(trust.hasNext())
+						{
+							Term[] trust_terms = trust.next().getTermsArray();
+							int agentID = Integer.parseInt(trust_terms[0].toString());
+							int trustAmount = Integer.parseInt(trust_terms[1].toString());
+							if(agentID == electedSchedulerID && trustAmount > 20 && numVirusPlayed >= 3)
+							{
+								vote = YES_VOTE;
+								break;
+							}
+							else if(agentID == electedSchedulerID && trustAmount > -1 && numVirusPlayed < 3)
+							{
+								vote = YES_VOTE;
+								break;
+							}
+							else if(agentID == electedSchedulerID && trustAmount < 0)
+								vote = NO_VOTE;
+						}
+					}
+				}
+			}
+		}
+		catch(NullPointerException ex){}
+		
+		//Take the final vote 
 		try
 		{	
 			Literal voteDecision = Literal.parseLiteral("voteDecision("+ vote +")");
@@ -93,7 +134,7 @@ public class RogueBeliefBase extends PlayerBeliefBase
 			candidates.add(agentID);
 		}
 		Random r = new Random();
-		int pick = r.nextInt(candidates.size()); 
+		int pick = r.nextInt(candidates.size() - 1); 
 		int agentID = candidates.get(pick);
 		candidate = Literal.parseLiteral("deleteDecision(" + agentID +")");
 		List<Literal> result = new ArrayList<Literal>();
