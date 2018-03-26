@@ -10,11 +10,13 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 	public Iterator<Literal> getSchedulerCandidate(Literal l, Unifier u)
 	{
 		Iterator<Literal> i;
+		Literal candidate = null;
 		try
 		{
-			i = getDefaultBeliefs(l ,u);		
+			i = getDefaultBeliefs(l ,u);
 			ArrayList<Integer> candidates = new ArrayList<Integer>();
-			Literal candidate;
+			
+			ArrayList<Integer> notVirusAgents = getNotVirusAgents();
 			
 			while(i.hasNext())
 			{
@@ -23,18 +25,33 @@ public class AntiVirusBeliefBase extends PlayerBeliefBase
 				int agentID = Integer.parseInt(candidate_terms[0].toString());
 				candidates.add(agentID);
 			}
+			//A default scheduler if there is no notVirus agent
 			Random r = new Random();
 			int pick = r.nextInt(candidates.size()); 
 			int agentID = candidates.get(pick);
 			candidate = Literal.parseLiteral("schedulerCandidate(" + agentID +")");
+			
+			//Just a double check
+			if(notVirusAgents != null)
+			{
+				int trust = -50;
+				for(Integer id: notVirusAgents)
+				{
+					for(Integer id2: candidates)
+					{
+						if(id == id2 && getTrust(id) >= trust)
+						{
+							candidate = Literal.parseLiteral("schedulerCandidate(" + id +")");
+							trust = getTrust(id);
+						}
+					}
+				}
+			}
+		}catch(NullPointerException ex){}
+		
 			List<Literal> result = new ArrayList<Literal>();
 			result.add(candidate);
 			return result.iterator();
-		}
-		catch(NullPointerException ex)
-		{
-			return getDefaultBeliefs(l, u);
-		}
 	}
 	
 	//Get the vote decision based on beliefs about the Kernel and Scheduler
