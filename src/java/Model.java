@@ -17,6 +17,8 @@ public class Model extends GridWorldModel
 	public static final int VIRUS_CARD = 1 << 5;
 	public static final int ANTI_VIRUS_CARD = 1 << 6;
 	public static final int MESSAGE = 1 << 7;
+	public static final int DECK = 1 << 8;
+	public static final int DISCARD = 1 << 9;
 	
 	public static final int VIRUS_ROLE = 0;
 	public static final int ROGUE_ROLE = 1;
@@ -145,6 +147,9 @@ public class Model extends GridWorldModel
 			set(BOARD, 3+i, 5);
 		for(int i = 0; i < 5; i++)
 			set(BOARD, 3+i, 7);
+		
+		set(DECK, 10, 5);
+		set(DISCARD, 10, 7);
 	}
 	
 	private void initRoles()
@@ -216,6 +221,8 @@ public class Model extends GridWorldModel
 	
 	private void shuffleDiscard()
 	{
+		requireViewUpdate = true;
+		
 		deck.addAll(discard);
 		discard.clear();
 		Collections.shuffle(deck);
@@ -268,7 +275,7 @@ public class Model extends GridWorldModel
 			else{
 				numVotesFailed++;
 				if(numVotesFailed >= 3)
-				{
+				{	
 					if(deck.isEmpty())
 						shuffleDiscard();
 					if(deck.remove(0) == VIRUS_CARD)
@@ -294,11 +301,20 @@ public class Model extends GridWorldModel
 	
 	//getters -----------------------------------------
 	
+	public int getDeckSize(){ return deck.size(); }
+	
+	public int getDiscardSize(){ return discard.size(); }
+	
 	public int getNumPlayers(){ return num_players; }
 
 	public int getBoardAbility()
 	{
 		return numVirusPlayed == 0 ? NO_ABILITY : board[numVirusPlayed - 1];
+	}
+	
+	public int getBoardAbility(int pos)
+	{
+		return 	board[pos];
 	}
 	
 	public int getNumAlive()
@@ -420,6 +436,8 @@ public class Model extends GridWorldModel
 		if(ag != kernelID || !hand[ag].isEmpty())
 			return false;
 		
+		requireViewUpdate = true;
+		
 		for(int i = 0; i < 3; i++){
 			if(deck.isEmpty())
 				shuffleDiscard();
@@ -453,6 +471,8 @@ public class Model extends GridWorldModel
 		if(success)
 			discard.add(VIRUS_CARD);
 		
+		requireViewUpdate = true;
+		
 		updateHand(ag);
 		
 		return success;
@@ -465,6 +485,8 @@ public class Model extends GridWorldModel
 		boolean success = hand[ag].remove(Integer.valueOf(ANTI_VIRUS_CARD));
 		if(success)
 			discard.add(ANTI_VIRUS_CARD);
+		
+		requireViewUpdate = true;
 		
 		updateHand(ag);
 		

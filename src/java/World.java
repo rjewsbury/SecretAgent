@@ -129,6 +129,7 @@ public class World extends TimeSteppedEnvironment implements ChangeListener {
 			if(view != null & model.checkRequireViewUpdate()){
 				view.updateAgents();
 				view.updateMessages();
+				view.updateDecks();
 			}
 			try { Thread.sleep(delay); } catch (InterruptedException x) { }
 			updatePercepts();

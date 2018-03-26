@@ -13,6 +13,7 @@ public class View extends GridWorldView
 	private static final Color DEAD_COLOR = Color.GRAY;
 	private static final Color ANTI_VIRUS_COLOR = new Color(66, 134, 244);
 	private static final Color TABLE_COLOR = new Color(188, 99, 43);
+	private static final Color DECK_COLOR = new Color(255, 165, 0);
 	
 	Font defaultFont = new Font("Arial", Font.BOLD, 15);
 	Model model;
@@ -59,6 +60,11 @@ public class View extends GridWorldView
 				}
 	}
 	
+	public void updateDecks(){
+		update(10,5);
+		update(10,7);
+	}
+	
 	@Override
 	public void draw(Graphics g, int x , int y, int object)
 	{
@@ -69,11 +75,15 @@ public class View extends GridWorldView
 			g.setColor(TABLE_COLOR.darker());
 			g.drawRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
 		}
+		//the board is given a letter for powers
 		if(object == Model.BOARD){
 			g.setColor(Color.GRAY);
 			g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
 			g.setColor(Color.DARK_GRAY);
 			g.drawRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
+			
+			if(y==5 && model.getBoardAbility(x-3) == Model.DELETE_AGENT)
+				drawString(g, x, y, defaultFont, "B");
 		}
 		//cards are given a letter
 		if(object == Model.VIRUS_CARD){
@@ -100,6 +110,25 @@ public class View extends GridWorldView
 			g.setColor(Color.BLACK);
 			if(msg != null)
 				drawString(g, x, y, defaultFont, msg);
+		}
+		if(object == Model.DECK){
+			g.setColor(DECK_COLOR);
+			g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
+			g.setColor(DECK_COLOR.darker());
+			g.drawRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
+			
+			g.setColor(Color.BLACK);
+			drawString(g, x, y, defaultFont, ""+model.getDeckSize());
+		}
+		
+		if(object == Model.DISCARD){
+			g.setColor(DECK_COLOR);
+			g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
+			g.setColor(DECK_COLOR.darker());
+			g.drawRect(x*cellSizeW,y*cellSizeH,cellSizeW-1,cellSizeH-1);
+			
+			g.setColor(Color.BLACK);
+			drawString(g, x, y, defaultFont, ""+model.getDiscardSize());
 		}
 	}
 	
