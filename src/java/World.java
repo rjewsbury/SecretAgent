@@ -114,10 +114,6 @@ public class World extends TimeSteppedEnvironment {
 		}
 		else
 			logger.info("executing: "+action+", but not implemented!");
-		
-		//logger.info(model.getName(i)+" did something!");
-		//if(!action.equals(wait))
-		//	System.out.println("-----"+agName+"-----"+action+"------"+result);
 
 		if (result)
 		{
@@ -125,7 +121,7 @@ public class World extends TimeSteppedEnvironment {
 				view.updateAgents();
 				view.updateMessages();
 			}
-			try { Thread.sleep(1); } catch (InterruptedException x) { }
+			try { Thread.sleep(150); } catch (InterruptedException x) { }
 			updatePercepts();
 		}
 		
