@@ -113,6 +113,11 @@ public class VirusBeliefBase extends PlayerBeliefBase
 		}
 	}
 	
+	public Iterator<Literal> getTrustDecision(Literal l, Unifier u)
+	{
+		
+	}
+	
 	public Iterator<Literal> getDiscardDecision(Literal l, Unifier u)
 	{
 		int virusPlayed = getVirusPlayed();

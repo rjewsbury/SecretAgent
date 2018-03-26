@@ -118,7 +118,7 @@ public class World extends TimeSteppedEnvironment {
 		//logger.info(model.getName(i)+" did something!");
 		//if(!action.equals(wait))
 		//	System.out.println("-----"+agName+"-----"+action+"------"+result);
-		
+
 		if (result)
 		{
 			if(view != null & model.checkRequireViewUpdate()){

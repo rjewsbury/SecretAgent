@@ -249,20 +249,10 @@ isDead :- player(X) & dead(Y) & X = Y.
 
 //if this player voted the same thing as another player, trust them a bit more
 +!interpretVotes
-	: player(ID) & vote(ID, X)
-		& vote(P, Y) & trust(P, T) & not interpretedVote(P)
-		& X = Y
+	: vote(P, Y) & trust(P, T) & not interpretedVote(P)
 	<-	-trust(P, T);
-		+trust(P, T+1);
-		+interpretedVote(P);
-		!interpretVotes.
-
-+!interpretVotes
-	: player(ID) & vote(ID, X)
-		& vote(P, Y) & trust(P, T) & not interpretedVote(P)
-		& not(X = Y)
-	<-	-trust(P, T);
-		+trust(P, T-2);
+		?interpretVote(P, D);
+		+trust(P, D);
 		+interpretedVote(P);
 		!interpretVotes.
 
@@ -285,14 +275,13 @@ isDead :- player(X) & dead(Y) & X = Y.
 		
 //change the trust value based on what card was played
 +!interpretCardPlayed
-	: scheduler(S) & trust(S, T) & virusPlayed
-	<-	-trust(S, T);
-		+trust(S, T-12).
-		
-+!interpretCardPlayed
-	: scheduler(S) & trust(S, T) & antiVirusPlayed
-	<-	-trust(S, T);
-		+trust(S, T+10).
+	: scheduler(S) & kernel(K) & trust(S, TS) & trust(K, TK)
+	<-	-trust(S, TS);
+		-trust(K, TK);
+		?interpretCard(S, DS);
+		+trust(S, DS);
+		?interpretCard(K, DK);
+		+trust(K, DK).
 
 //if it's already been decided how to discard, then discard the card.
 //keep the belief long enough to decide what to tell people,
