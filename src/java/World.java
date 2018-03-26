@@ -42,6 +42,7 @@ public class World extends TimeSteppedEnvironment implements ChangeListener {
 	public void init(String[] args) {
 		super.init(args);
 		
+		delay = 150;
 		useGui = false;
 		//first optional argument is the use of a gui
 		if (args.length > 0){
@@ -53,7 +54,6 @@ public class World extends TimeSteppedEnvironment implements ChangeListener {
 		
 		if (useGui)
 		{
-			delay = 150;
 			view = new View(model, this, delay);
 			model.setView(view);
 		}
