@@ -168,7 +168,8 @@ public class World extends TimeSteppedEnvironment {
 		if(model.getVoteComplete()){
 			addPercept(Literal.parseLiteral("voteComplete"));
 			for(int i = 0; i < model.getNumPlayers(); i++)
-				addPercept(Literal.parseLiteral("vote(" + i + ", " + model.getVote(i) + ")"));
+				if(model.getAlive(i))
+					addPercept(Literal.parseLiteral("vote(" + i + ", " + model.getVote(i) + ")"));
 		}
 		
 		if(model.getCardPlayed() > 0){

@@ -106,12 +106,9 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		{
 			Term[] vote_terms = vote.next().getTermsArray();
 			int agentID = Integer.parseInt(vote_terms[0].toString());
-			//negative numbers are surrounded in brackets? so we have to remove brackets
-			int tempVote = Integer.parseInt(
-					vote_terms[1].toString().replaceAll("\\(\\)",""));
 			if(ag == agentID)
 			{
-				voteVal = tempVote;
+				voteVal = Integer.parseInt(vote_terms[1].toString());
 				break;
 			}
 		}
