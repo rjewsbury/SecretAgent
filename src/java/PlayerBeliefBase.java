@@ -10,17 +10,28 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 	@Override
 	public Iterator<Literal> getCandidateBeliefs(Literal l, Unifier u)
 	{
+		//chooses an agent to become scheduler
 		if (l.getFunctor().equals("schedulerCandidate"))
 			return getSchedulerCandidate(l, u);
+		//chooses to vote yes or no
 		else if(l.getFunctor().equals("voteDecision"))
 			return getVoteDecision(l, u);
+		//chooses to discard virus or antivirus
 		else if(l.getFunctor().equals("discardDecision"))
 			return getDiscardDecision(l, u);
+		//choses an agent to delete
 		else if(l.getFunctor().equals("deleteDecision"))
 			return getDeleteDecision(l, u);
+		//chooses what to tell people was in their hand
 		else if(l.getFunctor().equals("handBroadcastDecision"))
 			return getHandBroadcastDecision(l, u);
-		else	
+		//chooses how to modify trust based on what was voted
+		else if(l.getFunctor().equals("interpretVote"))
+			return getInterpretVote(l, u);
+		//chooses how to modify trust based on what was played
+		else if(l.getFunctor().equals("interpretCard"))
+			return getInterpretCard(l, u);
+		else
 			return super.getCandidateBeliefs(l, u);
 	}
 	
@@ -39,7 +50,12 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 	public abstract Iterator<Literal> getDeleteDecision(Literal l, Unifier u);
 	
 	public abstract Iterator<Literal> getHandBroadcastDecision(Literal l, Unifier u);
-	//public abstract Iterator<Literal> getTrustDecision(Literal l, Unifier u);
+	
+	public abstract Iterator<Literal> getInterpretVote(Literal l, Unifier u);
+	
+	public abstract Iterator<Literal> getInterpretCard(Literal l, Unifier u);
+	
+	//HELPER FUNCTIONS --------------------------------------------------------
 	
 	public int getVirusPlayed()
 	{
@@ -67,6 +83,39 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 			numAntiVirusPlayed = Integer.parseInt(terms[0].toString());
 		}
 		return numAntiVirusPlayed;
+	}
+	
+	public boolean wasVirusPlayed()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("virusPlayed"), null);
+		return (percepts != null);
+	}
+	
+	public boolean wasAntiVirusPlayed()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("antiVirusPlayed"), null);
+		return (percepts != null);
+	}
+	
+	public int getVote(int ag)
+	{
+		Iterator<Literal> vote = getDefaultBeliefs(Literal.parseLiteral("vote(X, Y)"), null);
+		int voteVal = -1;
+		
+		while(vote.hasNext())
+		{
+			Term[] vote_terms = vote.next().getTermsArray();
+			int agentID = Integer.parseInt(vote_terms[0].toString());
+			//negative numbers are surrounded in brackets? so we have to remove brackets
+			int tempVote = Integer.parseInt(
+					vote_terms[1].toString().replaceAll("\\(\\)",""));
+			if(ag == agentID)
+			{
+				voteVal = tempVote;
+				break;
+			}
+		}
+		return voteVal;
 	}
 	
 	public int getTrust(int ag)
@@ -146,20 +195,6 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return -1;
 	}
 	
-	public int getID()
-	{
-		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("player(X)"), null);
-		while (percepts.hasNext())
-		{
-			Literal p = percepts.next();
-			//Get the Elected Scheduler ID
-			Term[] terms = p.getTermsArray();
-			int id = Integer.parseInt(terms[0].toString());
-			return id;
-		}
-		return -1;
-	}
-	
 	public int getSchedulerID()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("scheduler(X)"), null);
@@ -170,6 +205,19 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 			Term[] terms = p.getTermsArray();
 			int schedulerID = Integer.parseInt(terms[0].toString());
 			return schedulerID;
+		}
+		return -1;
+	}
+	
+	public int getID()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("player(X)"), null);
+		while (percepts.hasNext())
+		{
+			Literal p = percepts.next();
+			Term[] terms = p.getTermsArray();
+			int ID = Integer.parseInt(terms[0].toString());
+			return ID;
 		}
 		return -1;
 	}
