@@ -52,6 +52,20 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return numVirusPlayed;
 	}
 	
+	public int getAntiVirusPlayed()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("antiVirusPlayed(X)"), null);
+		int numAntiVirusPlayed = 0;
+		while (percepts.hasNext())
+		{
+			Literal p = percepts.next();
+			//Get the number of Virus cards played
+			Term[] terms = p.getTermsArray();
+			numAntiVirusPlayed = Integer.parseInt(terms[0].toString());
+		}
+		return numAntiVirusPlayed;
+	}
+	
 	public int getTrust(int ag)
 	{
 		Iterator<Literal> trust = getDefaultBeliefs(Literal.parseLiteral("trust(X, Y)"), null);

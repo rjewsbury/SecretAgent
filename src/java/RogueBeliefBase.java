@@ -47,11 +47,11 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		int YES_VOTE = 1;
 		int vote = YES_VOTE;
 		
+		//X is id, Y is amount
 		Iterator<Literal> notVirus = getDefaultBeliefs(Literal.parseLiteral("notVirus(X)"), null);
 		ArrayList<Integer> notVirusAgents = new ArrayList<Integer>();
 		Literal candidate;
-		//X is id, Y is amount
-		
+
 		try
 		{
 			while(notVirus.hasNext())
@@ -135,10 +135,27 @@ public class RogueBeliefBase extends PlayerBeliefBase
 		}
 		Random r = new Random();
 		int pick = r.nextInt(candidates.size() - 1); 
+		while(pick == getVirusID())
+			pick = r.nextInt(candidates.size() - 1); 
+			
 		int agentID = candidates.get(pick);
 		candidate = Literal.parseLiteral("deleteDecision(" + agentID +")");
 		List<Literal> result = new ArrayList<Literal>();
 		result.add(candidate);
 		return result.iterator();
+	}
+	
+	public int getVirusID()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("isVirus(X)"), null);
+		while (percepts.hasNext())
+		{
+			Literal p = percepts.next();
+			//Get the Virus ID
+			Term[] terms = p.getTermsArray();
+			int virusID = Integer.parseInt(terms[0].toString());
+			return virusID;
+		}
+		return -1;
 	}
 }

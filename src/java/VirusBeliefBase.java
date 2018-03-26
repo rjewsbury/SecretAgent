@@ -115,9 +115,16 @@ public class VirusBeliefBase extends PlayerBeliefBase
 	
 	public Iterator<Literal> getDiscardDecision(Literal l, Unifier u)
 	{
-		Literal voteDecision = Literal.parseLiteral("discardDecision(1)");
+		int virusPlayed = getVirusPlayed();
+		int antiVirusPlayed = getAntiVirusPlayed();
+		Literal discardDecision = Literal.parseLiteral("discardDecision(0)");
+		if(virusPlayed > 4)	
+			discardDecision = Literal.parseLiteral("discardDecision(1)");
+		else if(antiVirusPlayed > 3)
+			discardDecision = Literal.parseLiteral("discardDecision(1)");
+		
 		List<Literal> result = new ArrayList<Literal>();
-		result.add(voteDecision);
+		result.add(discardDecision);
 		return result.iterator();
 	}
 	

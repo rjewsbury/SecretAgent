@@ -66,6 +66,7 @@ public class Model extends GridWorldModel
 	
 	private boolean voteComplete = false;
 	private int cardPlayed = 0;
+	private int numVotesFailed = 0;
 	
 	//initialization ----------------------------------
 	
@@ -248,11 +249,24 @@ public class Model extends GridWorldModel
 		if(numYes + numNo == getNumAlive())
 		{
 			voteComplete = true;
+			numVotesFailed = 0;
 			if(numYes > numNo){
 				schedulerID = electedSchedulerID;
 			}
 			else{
-				//do we need extra logic if the vote fails?
+				numVotesFailed++;//do we need extra logic if the vote fails?
+				if(numVotesFailed == 3){
+					if(deck.isEmpty())
+						shuffleDiscard();
+					if(deck.remove(0) == VIRUS_CARD){
+						numVirusPlayed++;
+						board[numVirusPlayed-1] = NO_ABILITY;
+					}
+					else
+						numAntiVirusPlayed++;
+					updateBoardCards();
+					numVotesFailed = 0;
+				}
 			}
 			electedSchedulerID = -1;
 		}
