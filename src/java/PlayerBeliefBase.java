@@ -193,6 +193,20 @@ public abstract class PlayerBeliefBase extends DefaultBeliefBase
 		return -1;
 	}
 	
+	public int getID()
+	{
+		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("player(X)"), null);
+		while (percepts.hasNext())
+		{
+			Literal p = percepts.next();
+			//Get the Elected Scheduler ID
+			Term[] terms = p.getTermsArray();
+			int id = Integer.parseInt(terms[0].toString());
+			return id;
+		}
+		return -1;
+	}
+	
 	public int getSchedulerID()
 	{
 		Iterator<Literal> percepts = getDefaultBeliefs(Literal.parseLiteral("scheduler(X)"), null);

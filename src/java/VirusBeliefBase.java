@@ -52,9 +52,7 @@ public class VirusBeliefBase extends PlayerBeliefBase
 		ArrayList<Integer> notVirusAgents = new ArrayList<Integer>();
 		Literal candidate;
 		//X is id, Y is amount
-		
-		try
-		{
+		try{
 			while(notVirus.hasNext())
 			{
 				candidate = notVirus.next();
@@ -96,8 +94,7 @@ public class VirusBeliefBase extends PlayerBeliefBase
 					}
 				}
 			}
-		}
-		catch(NullPointerException ex){}
+		}catch(NullPointerException e){}
 		
 		//Take the final vote 
 		try
